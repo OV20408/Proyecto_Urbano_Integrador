@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+
+@layer utilities {
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fadeDown { animation: fadeDown .9s ease-out both; }
+}
+
+
+
+@keyframes slowZoom {
+  0% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-slowZoom {
+  animation: slowZoom 10s ease-in-out forwards;
+}
+
+@keyframes fadeDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-15px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeDown {
+  animation: fadeDown 1s ease forwards;
+}
+
+/* Bullets Swiper */
+.hero-swiper .swiper-pagination {
+  bottom: 28%;
+}
+
+.hero-swiper .swiper-pagination-bullet {
+  width: 26px;
+  height: 4px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.55);
+  opacity: 1;
+  margin: 0 6px !important;
+}
+
+.hero-swiper .swiper-pagination-bullet-active {
+  background: #fff;
+}
+
+
+
+
+/* Utilidades para igualar el look del template */
+.text-gradient {
+  background: linear-gradient(90deg, #ff7a18, #ffb800);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+          background-clip: text;
+          color: transparent;
+}
+.orange-text-marker-dark { color:#ff7a18; }
+.orange-text-marker-light { color:#ffb800; }
+
+/* Sombra del header sticky */
+.sticky-shadow { box-shadow: 0 10px 30px rgba(0,0,0,.06); }
+
+/* Offcanvas transiciones (móvil) */
+.offcanvas-enter { transform: translateX(100%); }
+.offcanvas-enter-active, .offcanvas-open {
+  transform: translateX(0%); transition: transform .25s ease;
+}
+.offcanvas-exit { transform: translateX(0%); }
+.offcanvas-exit-active {
+  transform: translateX(100%); transition: transform .2s ease;
+}
+
+/* Dots de Swiper como el template */
+.swiper-pagination-bullet { width:10px; height:10px; opacity:.5; }
+.swiper-pagination-bullet-active { opacity:1; background:#ff8a00; }
