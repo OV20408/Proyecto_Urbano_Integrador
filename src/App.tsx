@@ -1,6 +1,6 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
-// Sections / components (igual que en mi versión)
+// Landing (público)
 import Navbar from "./components/Navbar";
 import HeroSlider from "./components/HeroSlider";
 import Features from "./components/Features";
@@ -15,11 +15,25 @@ import BlogFeed from "./components/BlogFeed";
 import BookingForm from "./components/BookingForm";
 import Footer from "./components/Footer";
 
-// Pages
+// Auth público
 import Login from "./pages/Login";
 import Registro from "./pages/Registro";
 
-// Home (página principal) — ahora con TODAS las secciones
+// Privado
+import Dashboard from "./pages/Dashboard";
+import DashboardLayout from "./pages/DashboardLayout"; // <-- lo dejaste en /pages
+import ProtectedRoute from "./routes/ProtectedRoute";
+
+// Stubs privados (créalos si faltan)
+import Predicciones from "./pages/Predicciones";
+import Alertas from "./pages/Alertas";
+import AlertRules from "./pages/AlertRules";
+import Reportes from "./pages/Reportes";
+import Workflows from "./pages/Workflows";
+import Perfil from "./pages/Perfil";
+import Ajustes from "./pages/Ajustes";
+
+
 const Home = () => {
   return (
     <div className="font-sans overflow-x-hidden bg-white text-slate-800">
@@ -44,15 +58,34 @@ export default function App() {
   return (
     <Router>
       <Routes>
+        {/* Público */}
         <Route path="/" element={<Home />} />
-
-        {/* Auth */}
         <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Registro />} />
+        {/* Conserva ambas rutas pero redirige /register -> /registro */}
+        <Route path="/register" element={<Navigate to="/registro" replace />} />
         <Route path="/registro" element={<Registro />} />
 
-        {/* fallback opcional: vuelve al home */}
-        <Route path="*" element={<Home />} />
+        {/* Privado con layout + protección */}
+        <Route
+          element={
+            <ProtectedRoute>
+              <DashboardLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/predicciones" element={<Predicciones />} />
+          <Route path="/alertas" element={<Alertas />} />
+          <Route path="/alertas/reglas" element={<AlertRules />} />
+
+          <Route path="/reportes" element={<Reportes />} />
+          <Route path="/workflows" element={<Workflows />} />
+          <Route path="/perfil" element={<Perfil />} />
+          <Route path="/ajustes" element={<Ajustes />} />
+        </Route>
+
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );
