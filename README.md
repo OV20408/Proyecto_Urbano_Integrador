@@ -8,6 +8,20 @@ API REST con WebSockets para comunicación en tiempo real con el proyecto Proyec
 npm install
 ```
 
+## ⚙️ Configuración
+
+1. Copia el archivo `.env.example` a `.env`:
+```bash
+cp .env.example .env
+```
+
+2. Edita el archivo `.env` con tus configuraciones:
+```env
+PORT=3001
+SERVER_URL=http://localhost:3001
+WS_URL=ws://localhost:3001
+```
+
 ## 📦 Uso
 
 ### Modo desarrollo (con nodemon)

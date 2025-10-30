@@ -8,13 +8,18 @@
     "start": "node src/index.js",
     "dev": "nodemon src/index.js"
   },
-  "keywords": ["express", "websocket", "api"],
+  "keywords": [
+    "express",
+    "websocket",
+    "api"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
     "express": "^4.18.2",
-    "ws": "^8.14.2",
-    "cors": "^2.8.5"
+    "ws": "^8.14.2"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"

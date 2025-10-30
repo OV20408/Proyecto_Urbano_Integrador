@@ -2,19 +2,35 @@ import express from 'express';
 import { WebSocketServer } from 'ws';
 import cors from 'cors';
 import http from 'http';
+import dotenv from 'dotenv';
+
+// Cargar variables de entorno
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middleware
-app.use(cors());
+// Middleware - CORS configurado para permitir todas las conexiones
+app.use(cors({
+  origin: '*', // Permite cualquier origen
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: false
+}));
 app.use(express.json());
 
 // Crear servidor HTTP
 const server = http.createServer(app);
 
 // Crear servidor WebSocket
-const wss = new WebSocketServer({ server });
+const wss = new WebSocketServer({ 
+  server,
+  // Configurar WebSocket para aceptar conexiones de cualquier origen
+  verifyClient: (info) => {
+    // Permitir todas las conexiones
+    return true;
+  }
+});
 
 // Almacenar conexiones activas
 const clients = new Set();
@@ -128,7 +144,8 @@ app.get('/valor', (req, res) => {
 });
 
 // Iniciar servidor
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
+  console.log(`🌍 Accesible desde cualquier IP en el puerto ${PORT}`);
   console.log(`🔌 WebSocket disponible en ws://localhost:${PORT}`);
 });
