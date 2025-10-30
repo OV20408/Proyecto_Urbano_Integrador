@@ -6,6 +6,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from "recharts";
 import { useNavigate } from "react-router-dom";
+import { WebSocketDemo } from "../components/WebSocketDemo";
 
 /** =========================
  *  Datos de ejemplo (hardcodeados)
@@ -299,6 +300,11 @@ const Dashboard: React.FC = () => {
               </button>
             </div>
           </div>
+        </section>
+
+        {/* WebSocket Demo */}
+        <section className="mt-6">
+          <WebSocketDemo />
         </section>
       </div>
     </main>
