@@ -1,0 +1,25 @@
+{
+  "name": "api_proyecto_urbano_integrador",
+  "version": "1.0.0",
+  "description": "API con WebSockets para Proyecto Urbano Integrador",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
+  },
+  "keywords": ["express", "websocket", "api"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "ws": "^8.14.2",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "imports": {
+    "./components/WebSocketDemo": "./components/WebSocketDemo.js"
+  }
+}
