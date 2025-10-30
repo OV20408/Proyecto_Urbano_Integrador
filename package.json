@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.14",
+    "dotenv": "^17.2.3",
     "lucide-react": "^0.545.0",
     "powerbi-client": "^2.23.1",
     "powerbi-models": "^1.15.2",
