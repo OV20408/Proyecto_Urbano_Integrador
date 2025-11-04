@@ -21,34 +21,12 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto flex justify-between items-center px-6 md:px-10 py-5 md:py-6 text-white">
         {/* Logo */}
         <Link to="/" className="text-2xl md:text-3xl font-bold tracking-wider hover:opacity-90 transition">
-          PAUP
+          MARO
         </Link>
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-8">
-          {/* Menu Links */}
-          <ul className="flex gap-8 text-[15px] font-semibold">
-            <li>
-              <Link to="/" className="hover:opacity-80 cursor-pointer transition">
-                Home
-              </Link>
-            </li>
-            <li>
-              <Link to="/project" className="hover:opacity-80 cursor-pointer transition">
-                Project
-              </Link>
-            </li>
-            <li>
-              <Link to="/ods11" className="hover:opacity-80 cursor-pointer transition">
-                ODS 11
-              </Link>
-            </li>
-            <li>
-              <Link to="/contact" className="hover:opacity-80 cursor-pointer transition">
-                Contact
-              </Link>
-            </li>
-          </ul>
+          
 
           {/* Auth Buttons */}
           <div className="flex items-center gap-3 ml-4">

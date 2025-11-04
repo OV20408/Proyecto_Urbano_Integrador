@@ -1,4 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useWebSocketContext } from "../components/WebSocketContext";
+import { ValueModal } from "../components/ValueModal";
+
 
 type Reporte = {
   id: string;
@@ -14,6 +17,7 @@ type Reporte = {
 
 const BRAND_A = "#f39a2e";
 const BRAND_B = "#f07a09";
+
 
 const BASE: Reporte[] = [
   { id: "R-2401", fecha: "2025-10-01", zona: "Centro",     riesgo: "Alto",  pm25: 46, ica: 82, estado: "Pendiente", destinatario: "Autoridad", resumen: "Exceso puntual PM2.5 en franja matutina." },
@@ -51,6 +55,9 @@ function Kpi({ title, value }: { title: string; value: number }) {
 export default function Reportes() {
   const [data, setData] = useState<Reporte[]>(BASE);
   const [selIds, setSelIds] = useState<Set<string>>(new Set());
+  const { lastValue } = useWebSocketContext();
+  const [showModal, setShowModal] = useState(false);
+
 
   // Filtros
   const [qFrom, setQFrom] = useState<string>("");
@@ -64,6 +71,15 @@ export default function Reportes() {
   // Paginación
   const [page, setPage] = useState(1);
   const pageSize = 5;
+
+    useEffect(() => {
+    // Mostrar el modal solo si hay un valor
+    if (lastValue !== null) {
+      setShowModal(true);
+    }
+  }, []); // Solo al montar el componente
+
+  
 
   const filtrado = useMemo(() => {
     const from = qFrom ? new Date(qFrom) : null;
@@ -185,7 +201,16 @@ export default function Reportes() {
   };
 
   return (
+    
+    
     <div className="min-h-screen bg-slate-50 pb-12">
+      {showModal && (
+      <ValueModal
+        value={lastValue}
+        onClose={() => setShowModal(false)}
+        userName="Usuario Demo"
+      />
+    )}
       {/* Header */}
       <header className="sticky top-0 z-10 bg-white/80 backdrop-blur border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">

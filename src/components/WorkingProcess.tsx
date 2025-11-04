@@ -1,3 +1,5 @@
+import { assets } from '../assets/assets';
+
 export default function WorkingProcess() {
   return (
     <div className="relative py-20 bg-[#f8f8f8] overflow-hidden">
@@ -10,10 +12,10 @@ export default function WorkingProcess() {
         {/* Section Header */}
         <div className="mb-16">
           <h4 className="text-[#d4af37] text-lg font-['Teko'] tracking-wider mb-2">
-            WORKING PROCESS
+            Flujo de Nuestro Trabajo
           </h4>
           <h2 className="text-5xl md:text-6xl font-['Teko'] font-medium text-gray-900">
-            HOW IT WORKS?
+            Cómo Funciona?
           </h2>
         </div>
 
@@ -22,9 +24,9 @@ export default function WorkingProcess() {
           {/* Step 1 - Planning */}
           <div className="absolute left-[5%] top-1/4 transform -translate-y-1/2">
             <div className="flex flex-col items-center">
-              <div className="bg-white rounded-full p-8 shadow-lg mb-4 group hover:bg-[#d4af37] transition-colors">
+              <div className="bg-white rounded-full p-8 shadow-lg mb-4 group hover:bg-[#ffc291] transition-colors">
                 <img
-                  src="/assets/images/icons/working-process-icon-1.png"
+                  src={assets.workingImage1}
                   alt="Planning"
                   className="w-16 h-16 object-contain"
                 />
@@ -47,9 +49,9 @@ export default function WorkingProcess() {
           {/* Step 2 - Development */}
           <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
             <div className="flex flex-col items-center">
-              <div className="bg-white rounded-full p-8 shadow-lg mb-4 group hover:bg-[#d4af37] transition-colors">
+              <div className="bg-white rounded-full p-8 shadow-lg mb-4 group hover:bg-[#ffc291] transition-colors">
                 <img
-                  src="/assets/images/icons/working-process-icon-2.png"
+                  src={assets.workingImage2}
                   alt="Development"
                   className="w-16 h-16 object-contain"
                 />
@@ -72,9 +74,9 @@ export default function WorkingProcess() {
           {/* Step 3 - Launch */}
           <div className="absolute right-[5%] top-1/4 transform -translate-y-1/2">
             <div className="flex flex-col items-center">
-              <div className="bg-white rounded-full p-8 shadow-lg mb-4 group hover:bg-[#d4af37] transition-colors">
+              <div className="bg-white rounded-full p-8 shadow-lg mb-4 group hover:bg-[#ffc291] transition-colors">
                 <img
-                  src="/assets/images/icons/working-process-icon-3.png"
+                  src={assets.workingImage3}
                   alt="Launch"
                   className="w-16 h-16 object-contain"
                 />
@@ -86,25 +88,7 @@ export default function WorkingProcess() {
           </div>
         </div>
 
-        {/* Video Section */}
-        <div className="text-right">
-          <div className="inline-flex items-center gap-4">
-            <a
-              href="https://youtu.be/MKjhBO2xQzg"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="relative w-20 h-20 rounded-full bg-white flex items-center justify-center shadow-lg group hover:bg-[#d4af37] transition-colors"
-            >
-              <span className="absolute inset-0 rounded-full border-2 border-[#d4af37] animate-ping opacity-75"></span>
-              <i className="icofont-ui-play text-3xl text-[#d4af37] group-hover:text-white relative z-10"></i>
-            </a>
-            <div className="text-left">
-              <span className="text-gray-900 font-['Teko'] text-xl">
-                Watch 2 min <br /> Intro Video.
-              </span>
-            </div>
-          </div>
-        </div>
+        
       </div>
     </div>
   );
