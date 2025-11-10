@@ -7,7 +7,16 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+
+    "test:web": "npx playwright test",
+    "test:web:ui": "npx playwright test src/tests/playwright/ui.spec.ts",
+    "test:web:integration": "npx playwright test src/tests/playwright/integration.spec.ts",
+    "test:web:system": "npx playwright test src/tests/playwright/system.spec.ts",
+    "test:web:acceptance": "npx playwright test src/tests/playwright/acceptance.spec.ts",
+
+    "test:api": "newman run src/tests/postman/integrador_api_collection.json -r cli,html",
+    "test:mobile": "node src/tests/appium/login.test.js"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.14",
@@ -24,6 +33,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
+    "@playwright/test": "^1.56.1",
     "@types/node": "^24.6.0",
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",
