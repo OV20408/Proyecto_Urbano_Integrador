@@ -3,6 +3,8 @@ import { WebSocketServer } from 'ws';
 import cors from 'cors';
 import http from 'http';
 import dotenv from 'dotenv';
+import authRoutes from './auth.routes.js';
+
 
 // Cargar variables de entorno
 dotenv.config();
@@ -18,6 +20,10 @@ app.use(cors({
   credentials: false
 }));
 app.use(express.json());
+
+
+app.use('/api', authRoutes);
+
 
 // Crear servidor HTTP
 const server = http.createServer(app);
