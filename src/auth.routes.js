@@ -10,10 +10,28 @@ dotenv.config();
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'super_secreto';
 
-// ✅ Sincronizar BD (solo una vez al iniciar)
-sequelize.sync()
-  .then(() => console.log('🗄️ Base de datos sincronizada (User)'))
-  .catch(console.error);
+// ✅ Conexión/Sync de BD opcional al iniciar (no tumba el servidor si falla)
+const DB_ENABLED = process.env.DB_ENABLED !== 'false';
+const DB_SYNC_ON_START = process.env.DB_SYNC_ON_START !== 'false';
+
+async function initDatabaseIfEnabled() {
+  if (!DB_ENABLED) {
+    console.log('⚠️ DB deshabilitada por configuración (DB_ENABLED=false)');
+    return;
+  }
+  try {
+    await sequelize.authenticate();
+    console.log('🗄️ Conexión a BD establecida');
+    if (DB_SYNC_ON_START) {
+      await sequelize.sync();
+      console.log('🗄️ Base de datos sincronizada (User)');
+    }
+  } catch (err) {
+    console.warn('⚠️ No se pudo conectar/sincronizar la BD (continuando sin DB):', err.message);
+  }
+}
+
+initDatabaseIfEnabled();
 
 /* ============================================================
    🔹 Rutas

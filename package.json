@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon src/index.js",
+    "postman:test": "newman run tests/postman/API_Proyecto_Urbano.postman_collection.json -e tests/postman/local.postman_environment.json --reporters cli --reporter-cli-no-assertions"
   },
   "keywords": [
     "express",
@@ -27,7 +28,8 @@
     "ws": "^8.14.2"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "newman": "^6.2.0"
   },
   "imports": {
     "./components/WebSocketDemo": "./components/WebSocketDemo.js"

@@ -148,9 +148,13 @@ app.get('/valor', (req, res) => {
   }
 });
 
-// Iniciar servidor
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
-  console.log(`🌍 Accesible desde cualquier IP en el puerto ${PORT}`);
-  console.log(`🔌 WebSocket disponible en ws://localhost:${PORT}`);
-});
+// Iniciar servidor (evitar escuchar en modo test)
+if (process.env.NODE_ENV !== 'test') {
+  server.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
+    console.log(`🌍 Accesible desde cualquier IP en el puerto ${PORT}`);
+    console.log(`🔌 WebSocket disponible en ws://localhost:${PORT}`);
+  });
+}
+
+export { app, server };

@@ -1,0 +1,200 @@
+{
+  "info": {
+    "name": "API Proyecto Urbano Integrador",
+    "_postman_id": "f6f2a2f3-1111-4f2e-9f2b-aaaaaaaaaaaa",
+    "description": "Colección de pruebas automatizadas para endpoints principales.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "GET / (health)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            ""
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Content-Type es JSON\", function () {",
+              "  pm.response.to.have.header(\"Content-Type\");",
+              "  pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");",
+              "});",
+              "",
+              "pm.test(\"Body contiene status OK\", function () {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json).to.have.property('status', 'OK');",
+              "  pm.expect(json).to.have.property('message');",
+              "  pm.expect(json).to.have.property('websocket');",
+              "});",
+              "",
+              "pm.test(\"Tiempo de respuesta < 1s\", function () {",
+              "  pm.expect(pm.response.responseTime).to.be.below(1000);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "POST /mensaje",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"mensaje\": \"hola desde postman\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/mensaje",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "mensaje"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Content-Type es JSON\", function () {",
+              "  pm.response.to.have.header(\"Content-Type\");",
+              "  pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");",
+              "});",
+              "",
+              "pm.test(\"Echo del mensaje\", function () {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json).to.have.property('mensaje', 'hola desde postman');",
+              "});",
+              "",
+              "pm.test(\"Tiempo de respuesta < 1s\", function () {",
+              "  pm.expect(pm.response.responseTime).to.be.below(1000);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "POST /mensaje (400 faltante)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{ }"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/mensaje",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "mensaje"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code es 400 por validación\", function () {",
+              "  pm.response.to.have.status(400);",
+              "});",
+              "",
+              "pm.test(\"Error describe el campo faltante\", function () {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json).to.have.property('error');",
+              "  pm.expect(json.error).to.include('mensaje');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "GET /valor",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/valor",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "valor"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Content-Type es JSON\", function () {",
+              "  pm.response.to.have.header(\"Content-Type\");",
+              "  pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");",
+              "});",
+              "",
+              "pm.test(\"Valor en rango 0..100\", function () {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json).to.have.property('valor');",
+              "  pm.expect(json.valor).to.be.a('number');",
+              "  pm.expect(json.valor).to.be.at.least(0);",
+              "  pm.expect(json.valor).to.be.at.most(100);",
+              "});",
+              "",
+              "pm.test(\"Tiempo de respuesta < 1s\", function () {",
+              "  pm.expect(pm.response.responseTime).to.be.below(1000);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": []
+}
+
+
