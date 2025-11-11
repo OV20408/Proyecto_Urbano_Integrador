@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { WebSocketProvider } from "./components/WebSocketContext";
+import { AuthProvider } from "./pages/AuthContext"; // 👈 agrega esto
 
 // Landing (público)
 import Navbar from "./components/Navbar";
@@ -58,35 +59,35 @@ export default function App() {
   return (
     <WebSocketProvider>
       <Router>
-        <Routes>
-          {/* Público */}
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          {/* Conserva ambas rutas pero redirige /register -> /registro */}
-          <Route path="/register" element={<Navigate to="/registro" replace />} />
-          <Route path="/registro" element={<Registro />} />
+        <AuthProvider>
+          <Routes>
+            {/* Público */}
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Navigate to="/registro" replace />} />
+            <Route path="/registro" element={<Registro />} />
 
-          {/* Privado con layout + protección */}
-          <Route
-            element={
-              <ProtectedRoute>
-                <DashboardLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/predicciones" element={<Predicciones />} />
-            <Route path="/alertas" element={<Alertas />} />
-            <Route path="/alertas/reglas" element={<AlertRules />} />
-            <Route path="/reportes" element={<Reportes />} />
-            <Route path="/workflows" element={<Workflows />} />
-            <Route path="/perfil" element={<Perfil />} />
-            <Route path="/ajustes" element={<Ajustes />} />
-          </Route>
+            {/* Privado con layout + protección */}
+            <Route
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/predicciones" element={<Predicciones />} />
+              <Route path="/alertas" element={<Alertas />} />
+              <Route path="/alertas/reglas" element={<AlertRules />} />
+              <Route path="/reportes" element={<Reportes />} />
+              <Route path="/workflows" element={<Workflows />} />
+              <Route path="/perfil" element={<Perfil />} />
+              <Route path="/ajustes" element={<Ajustes />} />
+            </Route>
 
-          {/* Fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </AuthProvider>
       </Router>
     </WebSocketProvider>
   );

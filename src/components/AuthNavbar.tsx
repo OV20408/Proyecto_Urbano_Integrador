@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "../pages/AuthContext"; // ✅ Usa tu contexto global
 
 const ORANGE = "#f39a2e";
 const DEEP_ORANGE = "#f07a09";
@@ -9,12 +10,21 @@ const links = [
   { to: "/predicciones", label: "Predicciones" },
   { to: "/alertas", label: "Alertas" },
   { to: "/reportes", label: "Reportes" },
-  { to: "/workflows", label: "Workflows" }, // (n8n)
+  { to: "/workflows", label: "Workflows" },
 ];
 
 const AuthNavbar: React.FC = () => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+
+  // ✅ Datos globales desde el contexto
+  const { user, logout } = useAuth();
+  const userName = user?.name || "Invitado";
+
+  const handleLogout = () => {
+    logout(); // ✅ borra token + user
+    navigate("/login");
+  };
 
   return (
     <nav
@@ -44,7 +54,6 @@ const AuthNavbar: React.FC = () => {
                   {({ isActive }) => (
                     <span className="relative">
                       {l.label}
-                      {/* Indicador activo */}
                       <span
                         className={`block absolute left-0 right-0 -bottom-2 h-0.5 rounded-full transition-all ${
                           isActive ? "bg-white" : "bg-transparent"
@@ -66,12 +75,11 @@ const AuthNavbar: React.FC = () => {
               aria-expanded={open}
             >
               <div className="text-right hidden sm:block">
-                <div className="text-sm font-semibold leading-4">Franco</div>
+                <div className="text-sm font-semibold leading-4">{userName}</div>
                 <div className="text-[11px] opacity-80">Industria</div>
               </div>
               <div className="w-10 h-10 rounded-full ring-2 ring-white/60 overflow-hidden bg-white/20 grid place-items-center">
-                {/* Si luego tienes foto, reemplaza por <img src={foto} className="w-full h-full object-cover" /> */}
-                <span className="font-bold">F</span>
+                <span className="font-bold">{userName.charAt(0).toUpperCase() || "?"}</span>
               </div>
             </button>
 
@@ -82,20 +90,26 @@ const AuthNavbar: React.FC = () => {
                 className="absolute right-0 mt-3 w-48 rounded-xl overflow-hidden bg-white text-gray-700 shadow-lg"
               >
                 <button
-                  onClick={() => { setOpen(false); navigate("/perfil"); }}
+                  onClick={() => {
+                    setOpen(false);
+                    navigate("/perfil");
+                  }}
                   className="w-full text-left px-4 py-2.5 hover:bg-gray-50"
                 >
                   Perfil
                 </button>
                 <button
-                  onClick={() => { setOpen(false); navigate("/ajustes"); }}
+                  onClick={() => {
+                    setOpen(false);
+                    navigate("/ajustes");
+                  }}
                   className="w-full text-left px-4 py-2.5 hover:bg-gray-50"
                 >
                   Ajustes
                 </button>
                 <div className="h-px bg-gray-200" />
                 <button
-                  onClick={() => { setOpen(false); navigate("/login"); }}
+                  onClick={handleLogout}
                   className="w-full text-left px-4 py-2.5 hover:bg-gray-50 text-red-600"
                 >
                   Cerrar sesión

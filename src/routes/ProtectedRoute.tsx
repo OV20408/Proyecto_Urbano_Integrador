@@ -1,12 +1,19 @@
-import React from "react";
+import type { ReactNode } from "react"; 
 import { Navigate } from "react-router-dom";
+import { useAuth } from "../pages/AuthContext";
 
-const isAuthMock = true; // luego reemplaza por tu estado real
+interface ProtectedRouteProps {
+  children: ReactNode;
+}
 
-const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  if (!isAuthMock) return <Navigate to="/login" replace />;
+const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
+  const { token } = useAuth();
+
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+
   return <>{children}</>;
 };
 
 export default ProtectedRoute;
-

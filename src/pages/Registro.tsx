@@ -2,15 +2,16 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 const Registro = () => {
-  const [step, setStep] = useState(1)
+const [step, setStep] = useState<1 | 2>(1)
   const [nombre, setNombre] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
+  const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
-  const validateEmail = (email: string) => {
+  const validateEmail = (email: string) => { // ✅ Tipo agregado
     const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
     return re.test(email)
   }
@@ -30,7 +31,7 @@ const Registro = () => {
     setStep(2)
   }
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => { // ✅ Tipo agregado
     e.preventDefault()
 
     if (password.length < 6) {
@@ -44,7 +45,35 @@ const Registro = () => {
     }
 
     setErrorMessage('')
-    navigate('/dashboard')
+    setLoading(true)
+
+    try {
+      const response = await fetch('http://localhost:3001/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: nombre,
+          email: email,
+          password: password
+        })
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        console.log('✅ Usuario registrado:', data)
+        navigate('/login')
+      } else {
+        setErrorMessage(data.message || 'Error al registrar usuario')
+      }
+    } catch (error) {
+      console.error('❌ Error de conexión:', error)
+      setErrorMessage('No se pudo conectar con el servidor')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const stepContent = {
@@ -205,7 +234,8 @@ const Registro = () => {
                       <button
                         type="button"
                         onClick={() => setStep(1)}
-                        className="w-1/3 py-4 border-2 border-gray-300 text-gray-700 font-semibold rounded-full hover:border-[#f39a2e] hover:text-[#f39a2e] transition-all duration-300 flex items-center justify-center gap-2 group"
+                        disabled={loading}
+                        className="w-1/3 py-4 border-2 border-gray-300 text-gray-700 font-semibold rounded-full hover:border-[#f39a2e] hover:text-[#f39a2e] transition-all duration-300 flex items-center justify-center gap-2 group disabled:opacity-50"
                       >
                         <svg 
                           className="w-5 h-5 group-hover:-translate-x-1 transition-transform" 
@@ -220,9 +250,20 @@ const Registro = () => {
 
                       <button
                         type="submit"
-                        className="w-2/3 py-4 bg-gradient-to-r from-[#f39a2e] to-[#f07a09] text-white font-semibold rounded-full hover:shadow-xl hover:scale-105 transition-all duration-300"
+                        disabled={loading}
+                        className="w-2/3 py-4 bg-gradient-to-r from-[#f39a2e] to-[#f07a09] text-white font-semibold rounded-full hover:shadow-xl hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                       >
-                        REGISTRAR
+                        {loading ? (
+                          <>
+                            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            REGISTRANDO...
+                          </>
+                        ) : (
+                          'REGISTRAR'
+                        )}
                       </button>
                     </div>
                   </>
@@ -265,10 +306,10 @@ const Registro = () => {
               {/* Texto Central - Dinámico según step */}
               <div className="space-y-4 my-8 text-right">
                 <h1 className="text-4xl md:text-5xl font-bold leading-tight transition-all duration-500">
-                  {stepContent[step as keyof typeof stepContent].title}
+                  {stepContent[step].title}
                 </h1>
                 <p className="text-lg md:text-xl text-white/90 transition-all duration-500">
-                  {stepContent[step as keyof typeof stepContent].subtitle}
+                  {stepContent[step].subtitle}
                 </p>
               </div>
               
@@ -317,7 +358,6 @@ const Registro = () => {
           }
         }
 
-        /* Blobs de fondo */
         .blob {
           position: absolute;
           border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
@@ -364,7 +404,6 @@ const Registro = () => {
           animation-delay: -15s;
         }
 
-        /* Blobs internos del lado derecho */
         .blob-inner {
           position: absolute;
           border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;

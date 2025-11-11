@@ -1,11 +1,17 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from "../pages/AuthContext";
+
+
+
 
 const Login = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const navigate = useNavigate()
+  const { login } = useAuth();
+
 
   // 🔹 Validar formato de correo
   const validateEmail = (email: string) => {
@@ -28,7 +34,7 @@ const Login = () => {
     }
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/login`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -41,11 +47,12 @@ const Login = () => {
       }
 
       // Guardar token en localStorage
-      localStorage.setItem('token', data.token)
-      setErrorMessage('')
+      login(data.user, data.token);
+      setErrorMessage('');
+      navigate('/dashboard');
 
-      // Redirigir a dashboard si el login fue exitoso
-      navigate('/dashboard')
+
+      
     } catch (error: any) {
       console.error('Error en login:', error)
       setErrorMessage(error.message || 'No se pudo iniciar sesión.')
