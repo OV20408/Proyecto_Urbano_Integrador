@@ -121,59 +121,26 @@ const Dashboard: React.FC = () => {
 
         {/* Gráficos principales */}
         <section className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Tendencia AQI (línea) */}
-          <div className="col-span-1 lg:col-span-2 rounded-3xl bg-white shadow border border-orange-100">
+          <div className="rounded-3xl bg-white shadow border border-orange-100 overflow-hidden xl:col-span-3">
             <div className="p-5 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-700">Tendencia de ICA (hoy)</h2>
-              <span className="text-xs px-3 py-1 rounded-full"
-                style={{ background: `${ORANGE}15`, color: DEEP_ORANGE }}
-              >
-                Actualizado: 20:00
-              </span>
+              <h2 className="text-lg font-semibold text-gray-700">Power BI — Informe</h2>
             </div>
-            <div className="h-72 px-2 pb-6">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={aqiTrend}>
-                  <CartesianGrid strokeDasharray="4 4" stroke="#eee" />
-                  <XAxis dataKey="time" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="aqi"
-                    stroke={DEEP_ORANGE}
-                    strokeWidth={3}
-                    dot={{ r: 3 }}
-                    name="ICA"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+
+            <div className="w-full h-[700px]">
+              <iframe
+                title="powerbiiclase1completo"
+                src="https://app.powerbi.com/view?r=eyJrIjoiNjhhZjE1NjktOGRkMC00ZjY5LThlYjctY2Y0MTFiMjM4M2YwIiwidCI6Ijg5ZTg3ZmNkLTc3NTUtNDY5NC1hZmMzLTNjZWY4NDVjZjViNCIsImMiOjR9"
+                className="w-full h-full"
+                frameBorder="0"
+                allowFullScreen
+              />
             </div>
           </div>
 
-          {/* Alertas por tipo (barras) */}
-          <div className="col-span-1 rounded-3xl bg-white shadow border border-orange-100">
-            <div className="p-5 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-700">Alertas por tipo (24 h)</h2>
-              <span className="text-xs px-3 py-1 rounded-full"
-                style={{ background: `${WARN}15`, color: WARN }}
-              >
-                Alerta
-              </span>
-            </div>
-            <div className="h-72 px-2 pb-6">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={alertsData}>
-                  <CartesianGrid strokeDasharray="4 4" stroke="#eee" />
-                  <XAxis dataKey="type" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="count" radius={[8, 8, 0, 0]} fill={ORANGE} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
+
+
+          
+
         </section>
 
         {/* Fuente/Composición + Power BI + Tabla */}
@@ -203,44 +170,34 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* Power BI Placeholder (reemplazar después) */}
-          <div className="rounded-3xl bg-white shadow border border-orange-100 overflow-hidden">
-            <div className="p-5 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-700">Power BI — Informe</h2>
-              <span className="text-xs text-gray-500">Placeholder</span>
-            </div>
-            <div className="aspect-video bg-gradient-to-br from-orange-200 to-amber-200 flex items-center justify-center text-orange-900/80">
-              <div className="text-center px-6">
-                <div className="font-semibold">Aquí irá el informe de Power BI</div>
-                <div className="text-sm mt-2">
-                  Reemplaza este bloque por un <code>&lt;iframe&gt;</code> (Publicar en web) o integra con <code>powerbi-client</code>.
-                </div>
-                {/* EJEMPLO (público):
-                <iframe
-                  title="Reporte Ambiental"
-                  width="100%"
-                  height="100%"
-                  src="https://app.powerbi.com/view?r=TU_URL_PUBLICA"
-                  allowFullScreen
-                />
-                */}
 
-                {/* EJEMPLO (seguro con SDK):
-                import * as powerbi from "powerbi-client";
-                const models = powerbi.models;
-                const embedConfig = {
-                  type: "report",
-                  tokenType: models.TokenType.Embed,
-                  accessToken: "EMBED_TOKEN",
-                  embedUrl: "https://app.powerbi.com/reportEmbed?reportId=...&groupId=...",
-                  settings: { panes: { filters: { visible: false } } }
-                };
-                const reportContainer = document.getElementById("reportContainer");
-                powerbi.service.hEmbed(reportContainer, embedConfig);
-                */}
-              </div>
+          {/* Power BI Placeholder (reemplazar después) */}
+          {/* Power BI — Público */}
+          {/* Alertas por tipo (barras) */}
+          <div className="col-span-1 rounded-3xl bg-white shadow border border-orange-100">
+            <div className="p-5 flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-gray-700">Alertas por tipo (24 h)</h2>
+              <span className="text-xs px-3 py-1 rounded-full"
+                style={{ background: `${WARN}15`, color: WARN }}
+              >
+                Alerta
+              </span>
+            </div>
+            <div className="h-72 px-2 pb-6">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={alertsData}>
+                  <CartesianGrid strokeDasharray="4 4" stroke="#eee" />
+                  <XAxis dataKey="type" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="count" radius={[8, 8, 0, 0]} fill={ORANGE} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </div>
+
+
+          
 
           {/* Tabla — alertas recientes */}
           <div className="rounded-3xl bg-white shadow border border-orange-100 overflow-hidden">
