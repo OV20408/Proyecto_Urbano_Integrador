@@ -44,12 +44,6 @@ const Home = () => {
       <About />
       <Services />
       <WorkingProcess />
-      <Counters />
-      <Projects />
-      <Testimonials />
-      <ClientLogos />
-      <BlogFeed />
-      <BookingForm />
       <Footer />
     </div>
   );
