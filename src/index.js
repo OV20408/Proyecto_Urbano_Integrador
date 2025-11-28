@@ -4,7 +4,15 @@ import cors from 'cors';
 import http from 'http';
 import dotenv from 'dotenv';
 import authRoutes from './auth.routes.js';
-
+import zonasRoutes from './routes/zonas.routes.js';
+import medicionesRoutes from './routes/mediciones.routes.js';
+import reglasAlertasRoutes from './routes/reglas_alertas.routes.js';
+import alertasRoutes from './routes/alertas.routes.js';
+import workflowsRoutes from './routes/workflows.routes.js';
+import usuarioWorkflowsRoutes from './routes/usuario_workflows.routes.js';
+import logsWorkflowsRoutes from './routes/logs_workflows.routes.js';
+import reportesRoutes from './routes/reportes.routes.js';
+import openMeteoRoutes from './routes/openMeteo.routes.js';
 
 // Cargar variables de entorno
 dotenv.config();
@@ -21,8 +29,17 @@ app.use(cors({
 }));
 app.use(express.json());
 
-
+// Rutas de la API
 app.use('/api/auth', authRoutes);
+app.use('/api/zonas', zonasRoutes);
+app.use('/api/mediciones', medicionesRoutes);
+app.use('/api/reglas-alertas', reglasAlertasRoutes);
+app.use('/api/alertas', alertasRoutes);
+app.use('/api/workflows', workflowsRoutes);
+app.use('/api/usuario-workflows', usuarioWorkflowsRoutes);
+app.use('/api/logs-workflows', logsWorkflowsRoutes);
+app.use('/api/reportes', reportesRoutes);
+app.use('/api/open-meteo', openMeteoRoutes);
 
 // Crear servidor HTTP
 const server = http.createServer(app);

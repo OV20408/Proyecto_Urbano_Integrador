@@ -46,9 +46,9 @@ router.get('/health', (req, res) => {
    🔸 Registro de usuario
    ------------------------------------------------------------ */
 router.post('/register', async (req, res) => {
-  const { name, email, password } = req.body || {};
+  const { nombre, email, password } = req.body || {};
   
-  if (!name || !email || !password) {
+  if (!nombre || !email || !password) {
     return res.status(400).json({ message: 'Datos incompletos' });
   }
 
@@ -60,14 +60,14 @@ router.post('/register', async (req, res) => {
     }
 
     // Crear nuevo usuario
-    const passwordHash = bcrypt.hashSync(password, 10);
-    const user = await User.create({ name, email, passwordHash });
+    const password_hash = bcrypt.hashSync(password, 10);
+    const user = await User.create({ nombre, email, password_hash });
 
     console.log('✅ Usuario registrado en BD:', user.email);
     
     return res.status(201).json({
       message: 'Usuario registrado correctamente',
-      user: { id: user.id, name: user.name, email: user.email },
+      user: { usuario_id: user.usuario_id, nombre: user.nombre, email: user.email },
     });
 
   } catch (err) {
@@ -95,16 +95,16 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Credenciales inválidas' });
     }
 
-    const ok = bcrypt.compareSync(password, user.passwordHash);
+    const ok = bcrypt.compareSync(password, user.password_hash);
     if (!ok) {
       return res.status(401).json({ message: 'Credenciales inválidas' });
     }
 
-    const token = jwt.sign({ sub: user.id, email: user.email }, JWT_SECRET, { expiresIn: '2h' });
+    const token = jwt.sign({ sub: user.usuario_id, email: user.email }, JWT_SECRET, { expiresIn: '2h' });
     
     return res.json({ 
       token, 
-      user: { id: user.id, name: user.name, email: user.email } 
+      user: { usuario_id: user.usuario_id, nombre: user.nombre, email: user.email } 
     });
 
   } catch (err) {
