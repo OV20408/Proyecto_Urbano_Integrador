@@ -3,6 +3,62 @@ import { Op } from 'sequelize';
 import MedicionAire from '../models/MedicionAire.js';
 import Zona from '../models/Zona.js';
 
+/**
+ * Convierte valores DECIMAL de Sequelize a números (floats)
+ * Los valores DECIMAL pueden venir como objetos, strings o null
+ */
+function formatMedicion(medicion) {
+  if (!medicion) return null;
+  
+  // Convertir a objeto plano si es una instancia de Sequelize
+  // Usar get({ plain: true }) para incluir relaciones
+  const plain = medicion.get ? medicion.get({ plain: true }) : medicion;
+  
+  // Función helper para convertir DECIMAL a número
+  const toFloat = (value) => {
+    if (value === null || value === undefined) return null;
+    // Si es un objeto (Decimal de Sequelize), convertir a string y luego a número
+    if (typeof value === 'object' && value.toString) {
+      const str = value.toString();
+      const num = parseFloat(str);
+      return isNaN(num) ? null : num;
+    }
+    // Si es string, convertir a número
+    if (typeof value === 'string') {
+      const num = parseFloat(value);
+      return isNaN(num) ? null : num;
+    }
+    // Si ya es número, devolverlo
+    if (typeof value === 'number') {
+      return isNaN(value) ? null : value;
+    }
+    return null;
+  };
+
+  // Crear objeto formateado preservando todas las propiedades originales
+  const formatted = {
+    ...plain,
+    pm25: toFloat(plain.pm25),
+    pm10: toFloat(plain.pm10),
+    no2: toFloat(plain.no2),
+    temperatura: toFloat(plain.temperatura),
+    humedad_relativa: toFloat(plain.humedad_relativa),
+    precipitacion: toFloat(plain.precipitacion),
+    presion_superficial: toFloat(plain.presion_superficial),
+    velocidad_viento: toFloat(plain.velocidad_viento),
+    direccion_viento: plain.direccion_viento !== null && plain.direccion_viento !== undefined 
+      ? parseInt(plain.direccion_viento) 
+      : null
+  };
+
+  // Preservar relaciones incluidas (como 'zona')
+  if (plain.zona) {
+    formatted.zona = plain.zona;
+  }
+
+  return formatted;
+}
+
 // GET /api/mediciones - Obtener todas las mediciones
 export const getAllMediciones = async (req, res) => {
   try {
@@ -33,7 +89,10 @@ export const getAllMediciones = async (req, res) => {
       limit: parseInt(limit)
     });
 
-    res.json(mediciones);
+    // Formatear mediciones para convertir DECIMAL a números
+    const medicionesFormateadas = mediciones.map(medicion => formatMedicion(medicion));
+
+    res.json(medicionesFormateadas);
   } catch (error) {
     console.error('Error al obtener mediciones:', error);
     res.status(500).json({ message: 'Error al obtener mediciones', error: error.message });
@@ -55,7 +114,10 @@ export const getMedicionById = async (req, res) => {
       return res.status(404).json({ message: 'Medición no encontrada' });
     }
 
-    res.json(medicion);
+    // Formatear medición para convertir DECIMAL a números
+    const medicionFormateada = formatMedicion(medicion);
+
+    res.json(medicionFormateada);
   } catch (error) {
     console.error('Error al obtener medición:', error);
     res.status(500).json({ message: 'Error al obtener medición', error: error.message });
@@ -101,7 +163,10 @@ export const createMedicion = async (req, res) => {
     }, { transaction });
 
     await transaction.commit();
-    res.status(201).json(medicion);
+    
+    // Formatear medición para convertir DECIMAL a números
+    const medicionFormateada = formatMedicion(medicion);
+    res.status(201).json(medicionFormateada);
   } catch (error) {
     await transaction.rollback();
     console.error('Error al crear medición:', error);
@@ -150,8 +215,14 @@ export const updateMedicion = async (req, res) => {
       direccion_viento
     }, { transaction });
 
+    // Recargar la medición para obtener los valores actualizados
+    await medicion.reload({ transaction });
+    
     await transaction.commit();
-    res.json(medicion);
+    
+    // Formatear medición para convertir DECIMAL a números
+    const medicionFormateada = formatMedicion(medicion);
+    res.json(medicionFormateada);
   } catch (error) {
     await transaction.rollback();
     console.error('Error al actualizar medición:', error);
