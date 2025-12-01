@@ -1,0 +1,287 @@
+@startuml Diagrama de Sistema - Proyecto Urbano Integrador
+
+!define RECTANGLE class
+
+skinparam componentStyle rectangle
+skinparam linetype ortho
+
+title Diagrama de Sistema - Proyecto Urbano Integrador\nSistema de Monitoreo de Calidad del Aire
+
+' ==========================================
+' CAPA DE PRESENTACIÓN (Frontend)
+' ==========================================
+package "Frontend - React Application" #E1F5FE {
+  component [React App] as ReactApp
+  component [Vite Build Tool] as Vite
+  component [TypeScript] as TS
+   
+  package "UI Components" #B3E5FC {
+    component [Landing Page] as Landing
+    component [Navbar] as Navbar
+    component [Hero] as Hero
+    component [Features] as Features
+    component [Footer] as Footer
+  }
+  
+  package "Auth Components" #B3E5FC {
+    component [Login Page] as Login
+    component [Register Page] as Register
+    component [AuthContext] as AuthCtx
+    component [ProtectedRoute] as ProtectedRoute
+  }
+  
+  package "Dashboard Components" #B3E5FC {
+    component [Dashboard] as Dashboard
+    component [DashboardLayout] as DashboardLayout
+    component [Alertas] as Alertas
+    component [AlertRules] as AlertRules
+    component [Predicciones] as Predicciones
+    component [Reportes] as Reportes
+    component [Workflows] as Workflows
+    component [Perfil] as Perfil
+    component [Ajustes] as Ajustes
+  }
+  
+  package "Real-time Components" #B3E5FC {
+    component [WebSocketContext] as WSCtx
+    component [useWebSocket Hook] as WSHook
+    component [WebSocketDemo] as WSDemo
+  }
+  
+  package "Routing" #B3E5FC {
+    component [React Router] as Router
+    component [BrowserRouter] as BrowserRouter
+  }
+  
+  package "Charts & Visualization" #B3E5FC {
+    component [Recharts] as Recharts
+    component [PowerBI Client] as PowerBI
+  }
+}
+
+' ==========================================
+' CAPA DE API (Backend)
+' ==========================================
+package "Backend API - Express.js" #FFF3E0 {
+  component [Express Server] as ExpressServer
+  component [Node.js Runtime] as NodeJS
+  
+  package "Controllers" #FFE0B2 {
+    component [Auth Controller] as AuthCtrl
+    component [Open-Meteo Controller] as OpenMeteoCtrl
+    component [Zonas Controller] as ZonasCtrl
+    component [Mediciones Controller] as MedicionesCtrl
+    component [Alertas Controller] as AlertasCtrl
+    component [Workflows Controller] as WorkflowsCtrl
+  }
+  
+  package "Services" #FFE0B2 {
+    component [Open-Meteo Service] as OpenMeteoSvc
+    component [Auth Service] as AuthSvc
+    component [Alert Service] as AlertSvc
+  }
+  
+  package "Middleware" #FFE0B2 {
+    component [Auth Middleware] as AuthMiddleware
+    component [Error Handler] as ErrorHandler
+    component [CORS] as CORS
+  }
+  
+  package "WebSocket Server" #FFE0B2 {
+    component [WS Server] as WSServer
+    component [WS Handler] as WSHandler
+  }
+  
+  package "Models (Sequelize)" #FFE0B2 {
+    component [User Model] as UserModel
+    component [Zona Model] as ZonaModel
+    component [MedicionAire Model] as MedicionModel
+    component [Alerta Model] as AlertaModel
+    component [Workflow Model] as WorkflowModel
+  }
+}
+
+' ==========================================
+' CAPA DE DATOS
+' ==========================================
+package "Base de Datos" #E8F5E9 {
+  database "PostgreSQL" as PostgreSQL {
+    component [usuarios] as UsuariosTable
+    component [zonas] as ZonasTable
+    component [mediciones_aire] as MedicionesTable
+    component [alertas] as AlertasTable
+    component [reglas_alertas] as ReglasTable
+    component [workflows] as WorkflowsTable
+    component [usuario_workflows] as UsuarioWorkflowsTable
+    component [reportes] as ReportesTable
+  }
+}
+
+' ==========================================
+' SERVICIOS EXTERNOS
+' ==========================================
+package "Servicios Externos" #F3E5F5 {
+  cloud "Open-Meteo API" as OpenMeteoAPI {
+    component [Forecast API] as ForecastAPI
+    component [Air Quality API] as AirQualityAPI
+  }
+  
+  cloud "n8n Workflows" as N8N {
+    component [Workflow Engine] as N8NEngine
+    component [Webhooks] as N8NWebhooks
+  }
+  
+  cloud "Modelo de Predicción" as MLModel {
+    component [Prediction Service] as PredictionSvc
+  }
+}
+
+' ==========================================
+' RELACIONES FRONTEND
+' ==========================================
+ReactApp --> Vite
+ReactApp --> TS
+ReactApp --> Router
+Router --> BrowserRouter
+BrowserRouter --> Landing
+BrowserRouter --> Login
+BrowserRouter --> Register
+BrowserRouter --> ProtectedRoute
+
+ProtectedRoute --> AuthCtx
+ProtectedRoute --> DashboardLayout
+
+DashboardLayout --> Dashboard
+DashboardLayout --> Alertas
+DashboardLayout --> AlertRules
+DashboardLayout --> Predicciones
+DashboardLayout --> Reportes
+DashboardLayout --> Workflows
+DashboardLayout --> Perfil
+DashboardLayout --> Ajustes
+
+Landing --> Navbar
+Landing --> Hero
+Landing --> Features
+Landing --> Footer
+
+Dashboard --> Recharts
+Dashboard --> PowerBI
+Dashboard --> WSDemo
+
+WSCtx --> WSHook
+WSDemo --> WSCtx
+
+Login --> AuthCtx
+Register --> AuthCtx
+
+' ==========================================
+' RELACIONES BACKEND
+' ==========================================
+ExpressServer --> NodeJS
+ExpressServer --> AuthCtrl
+ExpressServer --> OpenMeteoCtrl
+ExpressServer --> ZonasCtrl
+ExpressServer --> MedicionesCtrl
+ExpressServer --> AlertasCtrl
+ExpressServer --> WorkflowsCtrl
+ExpressServer --> WSServer
+
+AuthCtrl --> AuthSvc
+OpenMeteoCtrl --> OpenMeteoSvc
+AlertasCtrl --> AlertSvc
+
+AuthCtrl --> AuthMiddleware
+OpenMeteoCtrl --> AuthMiddleware
+ZonasCtrl --> AuthMiddleware
+MedicionesCtrl --> AuthMiddleware
+AlertasCtrl --> AuthMiddleware
+WorkflowsCtrl --> AuthMiddleware
+
+ExpressServer --> CORS
+ExpressServer --> ErrorHandler
+
+WSServer --> WSHandler
+
+UserModel --> UsuariosTable
+ZonaModel --> ZonasTable
+MedicionModel --> MedicionesTable
+AlertaModel --> AlertasTable
+WorkflowModel --> WorkflowsTable
+
+AuthCtrl --> UserModel
+OpenMeteoCtrl --> ZonaModel
+OpenMeteoCtrl --> MedicionModel
+ZonasCtrl --> ZonaModel
+MedicionesCtrl --> MedicionModel
+AlertasCtrl --> AlertaModel
+WorkflowsCtrl --> WorkflowModel
+
+' ==========================================
+' RELACIONES CON BASE DE DATOS
+' ==========================================
+UserModel --> PostgreSQL
+ZonaModel --> PostgreSQL
+MedicionModel --> PostgreSQL
+AlertaModel --> PostgreSQL
+WorkflowModel --> PostgreSQL
+
+' ==========================================
+' RELACIONES CON SERVICIOS EXTERNOS
+' ==========================================
+OpenMeteoSvc --> ForecastAPI : HTTP/HTTPS
+OpenMeteoSvc --> AirQualityAPI : HTTP/HTTPS
+
+ExpressServer --> N8NWebhooks : HTTP/HTTPS
+N8NEngine --> ExpressServer : Webhooks
+
+ExpressServer --> PredictionSvc : HTTP/HTTPS
+
+' ==========================================
+' RELACIONES CLIENTE-SERVIDOR
+' ==========================================
+ReactApp --> ExpressServer : REST API\n(HTTP/HTTPS)
+WSCtx --> WSServer : WebSocket\n(WS/WSS)
+
+' ==========================================
+' NOTAS Y LEGENDAS
+' ==========================================
+note right of ReactApp
+  **Frontend Stack:**
+  - React 19.1.1
+  - TypeScript
+  - Vite
+  - React Router DOM
+  - TailwindCSS
+  - Recharts
+end note
+
+note right of ExpressServer
+  **Backend Stack:**
+  - Node.js
+  - Express.js
+  - Sequelize ORM
+  - WebSocket (ws)
+  - JWT Authentication
+end note
+
+note right of PostgreSQL
+  **Base de Datos:**
+  - PostgreSQL
+  - 8 tablas principales
+  - Foreign Keys
+  - Transacciones
+end note
+
+note right of OpenMeteoAPI
+  **Open-Meteo API:**
+  - Forecast API
+  - Air Quality API
+  - Datos horarios
+  - PM10, PM2.5, NO2
+end note
+
+@enduml
+
+
+
