@@ -79,6 +79,17 @@ export const getAllMediciones = async (req, res) => {
       }
     }
 
+    // Si no hay filtros específicos, priorizar mediciones con datos de calidad del aire
+    // (igual que hace el endpoint /sync)
+    if (!zona_id && !fecha_inicio && !fecha_fin) {
+      // Agregar filtro para priorizar mediciones con datos de calidad del aire
+      where[Op.or] = [
+        { pm10: { [Op.ne]: null } },
+        { pm25: { [Op.ne]: null } },
+        { no2: { [Op.ne]: null } }
+      ];
+    }
+
     const mediciones = await MedicionAire.findAll({
       where,
       include: [{
@@ -89,7 +100,7 @@ export const getAllMediciones = async (req, res) => {
       limit: parseInt(limit)
     });
 
-    // Formatear mediciones para convertir DECIMAL a números
+    // Formatear mediciones para convertir DECIMAL a números (igual que /sync)
     const medicionesFormateadas = mediciones.map(medicion => formatMedicion(medicion));
 
     res.json(medicionesFormateadas);

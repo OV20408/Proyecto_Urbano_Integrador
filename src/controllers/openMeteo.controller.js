@@ -5,6 +5,53 @@ import MedicionAire from '../models/MedicionAire.js';
 import { getCombinedData, processOpenMeteoData } from '../services/openMeteo.service.js';
 
 /**
+ * Convierte valores DECIMAL de Sequelize a números (floats)
+ * Los valores DECIMAL pueden venir como objetos, strings o null
+ */
+function formatMedicion(medicion) {
+  if (!medicion) return null;
+  
+  // Convertir a objeto plano si es una instancia de Sequelize
+  const plain = medicion.get ? medicion.get({ plain: true }) : medicion;
+  
+  // Función helper para convertir DECIMAL a número
+  const toFloat = (value) => {
+    if (value === null || value === undefined) return null;
+    // Si es un objeto (Decimal de Sequelize), convertir a string y luego a número
+    if (typeof value === 'object' && value.toString) {
+      const str = value.toString();
+      const num = parseFloat(str);
+      return isNaN(num) ? null : num;
+    }
+    // Si es string, convertir a número
+    if (typeof value === 'string') {
+      const num = parseFloat(value);
+      return isNaN(num) ? null : num;
+    }
+    // Si ya es número, devolverlo
+    if (typeof value === 'number') {
+      return isNaN(value) ? null : value;
+    }
+    return null;
+  };
+
+  return {
+    ...plain,
+    pm25: toFloat(plain.pm25),
+    pm10: toFloat(plain.pm10),
+    no2: toFloat(plain.no2),
+    temperatura: toFloat(plain.temperatura),
+    humedad_relativa: toFloat(plain.humedad_relativa),
+    precipitacion: toFloat(plain.precipitacion),
+    presion_superficial: toFloat(plain.presion_superficial),
+    velocidad_viento: toFloat(plain.velocidad_viento),
+    direccion_viento: plain.direccion_viento !== null && plain.direccion_viento !== undefined 
+      ? parseInt(plain.direccion_viento) 
+      : null
+  };
+}
+
+/**
  * GET /api/open-meteo/sync
  * Obtiene datos de Open-Meteo para todas las zonas activas y los guarda automáticamente
  * Este es el endpoint principal que hace todo: obtiene y guarda
@@ -125,19 +172,69 @@ export const syncAndGetData = async (req, res) => {
             });
 
             if (existing) {
-              await existing.update({
-                pm10: measurement.pm10,
-                pm25: measurement.pm25,
-                no2: measurement.no2,
+              // Log para debug antes de actualizar
+              if (updatedCount < 3) {
+                console.log(`🔄 Actualizando medición existente ID ${existing.medicion_id} para ${zona.nombre}:`, {
+                  valores_existentes: {
+                    pm10: existing.pm10,
+                    pm25: existing.pm25,
+                    no2: existing.no2
+                  },
+                  valores_nuevos: {
+                    pm10: measurement.pm10,
+                    pm25: measurement.pm25,
+                    no2: measurement.no2
+                  }
+                });
+              }
+
+              // Preparar objeto de actualización
+              const updateData = {
                 temperatura: measurement.temperatura,
                 humedad_relativa: measurement.humedad_relativa,
                 precipitacion: measurement.precipitacion,
                 presion_superficial: measurement.presion_superficial,
                 velocidad_viento: measurement.velocidad_viento,
                 direccion_viento: measurement.direccion_viento
-              }, { transaction });
+              };
+
+              // Actualizar valores de calidad del aire si vienen valores válidos
+              // Si el valor existente es null y viene un valor válido, actualizar
+              if (measurement.pm10 !== null && measurement.pm10 !== undefined) {
+                updateData.pm10 = measurement.pm10;
+              }
+              if (measurement.pm25 !== null && measurement.pm25 !== undefined) {
+                updateData.pm25 = measurement.pm25;
+              }
+              if (measurement.no2 !== null && measurement.no2 !== undefined) {
+                updateData.no2 = measurement.no2;
+              }
+
+              await existing.update(updateData, { transaction });
+              
+              // Recargar para verificar valores guardados
+              await existing.reload({ transaction });
+              
+              if (updatedCount < 3) {
+                console.log(`✅ Después de actualizar medición ID ${existing.medicion_id}:`, {
+                  pm10: existing.pm10,
+                  pm25: existing.pm25,
+                  no2: existing.no2
+                });
+              }
+              
               updatedCount++;
             } else {
+              // Log para debug antes de crear
+              if (savedCount < 3) {
+                console.log(`➕ Creando nueva medición para ${zona.nombre} (${fechaHoraNormalizada.toISOString()}):`, {
+                  pm10: measurement.pm10,
+                  pm25: measurement.pm25,
+                  no2: measurement.no2,
+                  temperatura: measurement.temperatura
+                });
+              }
+
               const nuevaMedicion = await MedicionAire.create({
                 zona_id: zona.zona_id,
                 fecha_hora: fechaHoraNormalizada,
@@ -151,6 +248,15 @@ export const syncAndGetData = async (req, res) => {
                 velocidad_viento: measurement.velocidad_viento,
                 direccion_viento: measurement.direccion_viento
               }, { transaction });
+              
+              if (savedCount < 3) {
+                console.log(`✅ Después de crear medición ID ${nuevaMedicion.medicion_id}:`, {
+                  pm10: nuevaMedicion.pm10,
+                  pm25: nuevaMedicion.pm25,
+                  no2: nuevaMedicion.no2
+                });
+              }
+              
               savedCount++;
             }
           } catch (measurementError) {
@@ -212,7 +318,9 @@ export const syncAndGetData = async (req, res) => {
       }
 
       if (medicion) {
-        console.log(`📊 Última medición para ${zona.nombre}: fecha=${medicion.fecha_hora}, pm10=${medicion.pm10}, pm25=${medicion.pm25}, no2=${medicion.no2}`);
+        // Formatear medición para convertir DECIMAL a números
+        const medicionFormateada = formatMedicion(medicion);
+        console.log(`📊 Última medición para ${zona.nombre}: fecha=${medicionFormateada.fecha_hora}, pm10=${medicionFormateada.pm10}, pm25=${medicionFormateada.pm25}, no2=${medicionFormateada.no2}`);
         realtimeData.push({
           zona: {
             zona_id: zona.zona_id,
@@ -220,16 +328,16 @@ export const syncAndGetData = async (req, res) => {
             codigo: zona.codigo
           },
           ultima_medicion: {
-            fecha_hora: medicion.fecha_hora,
-            pm25: medicion.pm25,
-            pm10: medicion.pm10,
-            no2: medicion.no2,
-            temperatura: medicion.temperatura,
-            humedad_relativa: medicion.humedad_relativa,
-            precipitacion: medicion.precipitacion,
-            presion_superficial: medicion.presion_superficial,
-            velocidad_viento: medicion.velocidad_viento,
-            direccion_viento: medicion.direccion_viento
+            fecha_hora: medicionFormateada.fecha_hora,
+            pm25: medicionFormateada.pm25,
+            pm10: medicionFormateada.pm10,
+            no2: medicionFormateada.no2,
+            temperatura: medicionFormateada.temperatura,
+            humedad_relativa: medicionFormateada.humedad_relativa,
+            precipitacion: medicionFormateada.precipitacion,
+            presion_superficial: medicionFormateada.presion_superficial,
+            velocidad_viento: medicionFormateada.velocidad_viento,
+            direccion_viento: medicionFormateada.direccion_viento
           }
         });
       }
@@ -472,18 +580,29 @@ export const syncAllZonas = async (req, res) => {
             }
 
             if (existing) {
-              // Actualizar medición existente
-              await existing.update({
-                pm10: measurement.pm10,
-                pm25: measurement.pm25,
-                no2: measurement.no2,
+              // Preparar objeto de actualización
+              const updateData = {
                 temperatura: measurement.temperatura,
                 humedad_relativa: measurement.humedad_relativa,
                 precipitacion: measurement.precipitacion,
                 presion_superficial: measurement.presion_superficial,
                 velocidad_viento: measurement.velocidad_viento,
                 direccion_viento: measurement.direccion_viento
-              }, { transaction });
+              };
+
+              // Solo actualizar valores de calidad del aire si no son null
+              if (measurement.pm10 !== null && measurement.pm10 !== undefined) {
+                updateData.pm10 = measurement.pm10;
+              }
+              if (measurement.pm25 !== null && measurement.pm25 !== undefined) {
+                updateData.pm25 = measurement.pm25;
+              }
+              if (measurement.no2 !== null && measurement.no2 !== undefined) {
+                updateData.no2 = measurement.no2;
+              }
+
+              // Actualizar medición existente
+              await existing.update(updateData, { transaction });
               updatedCount++;
               
               // Log para verificar valores guardados en actualización
@@ -691,17 +810,28 @@ export const syncZonaById = async (req, res) => {
         });
 
         if (existing) {
-          await existing.update({
-            pm10: measurement.pm10,
-            pm25: measurement.pm25,
-            no2: measurement.no2,
+          // Preparar objeto de actualización
+          const updateData = {
             temperatura: measurement.temperatura,
             humedad_relativa: measurement.humedad_relativa,
             precipitacion: measurement.precipitacion,
             presion_superficial: measurement.presion_superficial,
             velocidad_viento: measurement.velocidad_viento,
             direccion_viento: measurement.direccion_viento
-          }, { transaction });
+          };
+
+          // Solo actualizar valores de calidad del aire si no son null
+          if (measurement.pm10 !== null && measurement.pm10 !== undefined) {
+            updateData.pm10 = measurement.pm10;
+          }
+          if (measurement.pm25 !== null && measurement.pm25 !== undefined) {
+            updateData.pm25 = measurement.pm25;
+          }
+          if (measurement.no2 !== null && measurement.no2 !== undefined) {
+            updateData.no2 = measurement.no2;
+          }
+
+          await existing.update(updateData, { transaction });
           updatedCount++;
         } else {
           const nuevaMedicion = await MedicionAire.create({
@@ -781,23 +911,35 @@ export const getRealtimeData = async (req, res) => {
     for (const zona of zonas) {
       console.log(`🔍 Buscando mediciones para zona ${zona.nombre} (ID: ${zona.zona_id})`);
       
-      // Primero verificar cuántas mediciones hay en total para esta zona
-      const countTotal = await MedicionAire.count({
-        where: { zona_id: zona.zona_id }
-      });
-      
-      console.log(`📊 Total de mediciones en BD para ${zona.nombre}: ${countTotal}`);
-
-      const mediciones = await MedicionAire.findAll({
-        where: { zona_id: zona.zona_id },
+      // Primero intentar obtener mediciones con datos de calidad del aire (igual que /sync)
+      let mediciones = await MedicionAire.findAll({
+        where: {
+          zona_id: zona.zona_id,
+          [Op.or]: [
+            { pm10: { [Op.ne]: null } },
+            { pm25: { [Op.ne]: null } },
+            { no2: { [Op.ne]: null } }
+          ]
+        },
         order: [['fecha_hora', 'DESC']],
         limit: parseInt(limit)
       });
+
+      // Si no hay mediciones con datos de calidad del aire, obtener las últimas en general
+      if (mediciones.length === 0) {
+        mediciones = await MedicionAire.findAll({
+          where: { zona_id: zona.zona_id },
+          order: [['fecha_hora', 'DESC']],
+          limit: parseInt(limit)
+        });
+      }
 
       console.log(`📦 Mediciones encontradas para ${zona.nombre}: ${mediciones.length}`);
 
       if (mediciones.length > 0) {
         totalMediciones += mediciones.length;
+        // Formatear mediciones para convertir DECIMAL a números (igual que /sync)
+        const medicionesFormateadas = mediciones.map(m => formatMedicion(m));
         realtimeData.push({
           zona: {
             zona_id: zona.zona_id,
@@ -806,7 +948,7 @@ export const getRealtimeData = async (req, res) => {
             latitud: zona.latitud,
             longitud: zona.longitud
           },
-          mediciones: mediciones.map(m => ({
+          mediciones: medicionesFormateadas.map(m => ({
             medicion_id: m.medicion_id,
             fecha_hora: m.fecha_hora,
             pm25: m.pm25,
@@ -822,6 +964,11 @@ export const getRealtimeData = async (req, res) => {
           }))
         });
       } else {
+        // Verificar cuántas mediciones hay en total para esta zona
+        const countTotal = await MedicionAire.count({
+          where: { zona_id: zona.zona_id }
+        });
+        
         realtimeData.push({
           zona: {
             zona_id: zona.zona_id,
@@ -833,7 +980,7 @@ export const getRealtimeData = async (req, res) => {
           mediciones: [],
           mensaje: 'No hay datos disponibles para esta zona',
           total_en_bd: countTotal,
-          sugerencia: countTotal === 0 ? 'Ejecuta POST /api/open-meteo/sync para obtener y guardar datos' : 'Verifica los filtros de búsqueda'
+          sugerencia: countTotal === 0 ? 'Ejecuta GET /api/open-meteo/sync para obtener y guardar datos' : 'Verifica los filtros de búsqueda'
         });
       }
     }
@@ -873,21 +1020,35 @@ export const getRealtimeDataByZona = async (req, res) => {
       return res.status(404).json({ message: 'Zona no encontrada' });
     }
 
+    // Primero intentar obtener mediciones con datos de calidad del aire (igual que /sync)
+    let mediciones = await MedicionAire.findAll({
+      where: {
+        zona_id: parseInt(zona_id),
+        [Op.or]: [
+          { pm10: { [Op.ne]: null } },
+          { pm25: { [Op.ne]: null } },
+          { no2: { [Op.ne]: null } }
+        ]
+      },
+      order: [['fecha_hora', 'DESC']],
+      limit: parseInt(limit)
+    });
+
+    // Si no hay mediciones con datos de calidad del aire, obtener las últimas en general
+    if (mediciones.length === 0) {
+      mediciones = await MedicionAire.findAll({
+        where: { zona_id: parseInt(zona_id) },
+        order: [['fecha_hora', 'DESC']],
+        limit: parseInt(limit)
+      });
+    }
+
     // Verificar cuántas mediciones hay en total
     const countTotal = await MedicionAire.count({
       where: { zona_id: parseInt(zona_id) }
     });
 
-    console.log(`📊 Total de mediciones en BD para zona ${zona.nombre}: ${countTotal}`);
-
-    // Obtener las últimas mediciones de la zona
-    const mediciones = await MedicionAire.findAll({
-      where: { zona_id: parseInt(zona_id) },
-      order: [['fecha_hora', 'DESC']],
-      limit: parseInt(limit)
-    });
-
-    console.log(`📦 Mediciones encontradas: ${mediciones.length}`);
+    console.log(`📦 Mediciones encontradas: ${mediciones.length} (total en BD: ${countTotal})`);
 
     if (mediciones.length === 0) {
       return res.json({
@@ -906,8 +1067,9 @@ export const getRealtimeDataByZona = async (req, res) => {
       });
     }
 
-    // Obtener la última medición (más reciente)
-    const ultimaMedicion = mediciones[0];
+    // Obtener la última medición (más reciente) y formatear
+    const ultimaMedicion = formatMedicion(mediciones[0]);
+    const historialFormateado = mediciones.map(m => formatMedicion(m));
 
     res.json({
       timestamp: new Date().toISOString(),
@@ -932,7 +1094,7 @@ export const getRealtimeDataByZona = async (req, res) => {
         direccion_viento: ultimaMedicion.direccion_viento,
         fecha_creacion: ultimaMedicion.fecha_creacion
       },
-      historial: mediciones.map(m => ({
+      historial: historialFormateado.map(m => ({
         medicion_id: m.medicion_id,
         fecha_hora: m.fecha_hora,
         pm25: m.pm25,

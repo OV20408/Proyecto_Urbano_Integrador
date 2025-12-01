@@ -362,14 +362,26 @@ export const processOpenMeteoData = (airQualityData, forecastData) => {
     tiene_nitrogen_dioxide: !!airQualityHourly.nitrogen_dioxide,
     longitud_pm10: airQualityHourly.pm10?.length || 0,
     longitud_pm2_5: airQualityHourly.pm2_5?.length || 0,
-    longitud_no2: airQualityHourly.nitrogen_dioxide?.length || 0
+    longitud_no2: airQualityHourly.nitrogen_dioxide?.length || 0,
+    primer_forecast_time: forecastTimeArray[0],
+    primer_airQuality_time: airQualityTimeArray[0],
+    ultimo_forecast_time: forecastTimeArray[forecastTimeArray.length - 1],
+    ultimo_airQuality_time: airQualityTimeArray[airQualityTimeArray.length - 1]
   });
+
+  // Función helper para normalizar fechas a la hora exacta (sin minutos/segundos/milisegundos)
+  const normalizeTimeKey = (dateStr) => {
+    const date = new Date(dateStr);
+    date.setMinutes(0, 0, 0);
+    return date.toISOString();
+  };
 
   // Crear un mapa de tiempo -> índice para calidad del aire para búsqueda rápida
   const airQualityTimeMap = new Map();
   if (airQualityTimeArray.length > 0) {
     airQualityTimeArray.forEach((timeStr, index) => {
-      const timeKey = new Date(timeStr).toISOString();
+      const timeKey = normalizeTimeKey(timeStr);
+      // También guardar con el índice directo como fallback
       airQualityTimeMap.set(timeKey, index);
     });
   }
@@ -377,10 +389,27 @@ export const processOpenMeteoData = (airQualityData, forecastData) => {
   // Procesar cada hora del forecast
   for (let i = 0; i < forecastTimeArray.length; i++) {
     const fechaHora = new Date(forecastTimeArray[i]);
-    const timeKey = fechaHora.toISOString();
+    const timeKey = normalizeTimeKey(forecastTimeArray[i]);
     
     // Buscar el índice correspondiente en calidad del aire usando el mapa de tiempo
-    const airQualityIndex = airQualityTimeMap.get(timeKey);
+    let airQualityIndex = airQualityTimeMap.get(timeKey);
+    
+    // Si no encontramos por clave normalizada, intentar buscar por índice directo
+    // (asumiendo que los arrays están alineados)
+    if (airQualityIndex === undefined && i < airQualityTimeArray.length) {
+      const directTimeKey = normalizeTimeKey(airQualityTimeArray[i]);
+      if (directTimeKey === timeKey) {
+        airQualityIndex = i;
+      }
+    }
+    
+    // Si aún no encontramos, usar el índice directo si los arrays tienen la misma longitud
+    // Esto es un fallback para cuando las fechas no coinciden exactamente pero los arrays están alineados
+    if (airQualityIndex === undefined && 
+        airQualityTimeArray.length === forecastTimeArray.length && 
+        i < airQualityTimeArray.length) {
+      airQualityIndex = i;
+    }
     
     // Datos de calidad del aire (del endpoint air-quality-api.open-meteo.com)
     // Solo usar si encontramos el índice correspondiente por fecha/hora
@@ -389,19 +418,32 @@ export const processOpenMeteoData = (airQualityData, forecastData) => {
     let no2 = null;
     
     if (airQualityIndex !== undefined && airQualityHourly) {
-      pm10 = (airQualityHourly.pm10 && Array.isArray(airQualityHourly.pm10) && airQualityIndex < airQualityHourly.pm10.length) 
-        ? airQualityHourly.pm10[airQualityIndex] 
-        : null;
-      pm25 = (airQualityHourly.pm2_5 && Array.isArray(airQualityHourly.pm2_5) && airQualityIndex < airQualityHourly.pm2_5.length)
-        ? airQualityHourly.pm2_5[airQualityIndex]
-        : null;
-      no2 = (airQualityHourly.nitrogen_dioxide && Array.isArray(airQualityHourly.nitrogen_dioxide) && airQualityIndex < airQualityHourly.nitrogen_dioxide.length)
-        ? airQualityHourly.nitrogen_dioxide[airQualityIndex]
-        : null;
+      // Obtener valores directamente del índice encontrado
+      if (airQualityHourly.pm10 && Array.isArray(airQualityHourly.pm10) && airQualityIndex < airQualityHourly.pm10.length) {
+        const value = airQualityHourly.pm10[airQualityIndex];
+        // Solo asignar si el valor no es null y es un número válido
+        if (value !== null && value !== undefined && !isNaN(value)) {
+          pm10 = parseFloat(value);
+        }
+      }
+      
+      if (airQualityHourly.pm2_5 && Array.isArray(airQualityHourly.pm2_5) && airQualityIndex < airQualityHourly.pm2_5.length) {
+        const value = airQualityHourly.pm2_5[airQualityIndex];
+        if (value !== null && value !== undefined && !isNaN(value)) {
+          pm25 = parseFloat(value);
+        }
+      }
+      
+      if (airQualityHourly.nitrogen_dioxide && Array.isArray(airQualityHourly.nitrogen_dioxide) && airQualityIndex < airQualityHourly.nitrogen_dioxide.length) {
+        const value = airQualityHourly.nitrogen_dioxide[airQualityIndex];
+        if (value !== null && value !== undefined && !isNaN(value)) {
+          no2 = parseFloat(value);
+        }
+      }
     }
     
-    // Log para las primeras 3 mediciones para debug
-    if (i < 3) {
+    // Log para las primeras 5 mediciones y algunas más para debug
+    if (i < 5 || (i % 24 === 0)) {
       console.log(`🔍 Medición ${i}: fecha=${timeKey}, airQualityIndex=${airQualityIndex}, pm10=${pm10}, pm25=${pm25}, no2=${no2}`);
     }
 
