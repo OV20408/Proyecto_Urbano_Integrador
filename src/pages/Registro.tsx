@@ -54,7 +54,7 @@ const [step, setStep] = useState<1 | 2>(1)
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          name: nombre,
+          nombre: nombre,
           email: email,
           password: password
         })

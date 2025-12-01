@@ -123,13 +123,15 @@ const Dashboard: React.FC = () => {
         <section className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="rounded-3xl bg-white shadow border border-orange-100 overflow-hidden xl:col-span-3">
             <div className="p-5 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-700">Power BI — Informe</h2>
+              <h2 className="text-lg font-semibold text-gray-700">
+                Power BI — Calidad del Aire Santa Cruz
+              </h2>
             </div>
 
             <div className="w-full h-[700px]">
               <iframe
-                title="powerbiiclase1completo"
-                src="https://app.powerbi.com/view?r=eyJrIjoiNjhhZjE1NjktOGRkMC00ZjY5LThlYjctY2Y0MTFiMjM4M2YwIiwidCI6Ijg5ZTg3ZmNkLTc3NTUtNDY5NC1hZmMzLTNjZWY4NDVjZjViNCIsImMiOjR9"
+                title="powerbi_urbano"
+                src="https://app.powerbi.com/view?r=eyJrIjoiNGZjNDJkMWEtMjBiYy00ZjliLWE0MTAtNTBhOGFiNzdlMWM1IiwidCI6Ijg5ZTg3ZmNkLTc3NTUtNDY5NC1hZmMzLTNjZWY4NDVjZjViNCIsImMiOjR9"
                 className="w-full h-full"
                 frameBorder="0"
                 allowFullScreen

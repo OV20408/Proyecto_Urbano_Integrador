@@ -193,13 +193,7 @@ export default function Workflows() {
             >
               Exportar JSON
             </button>
-            <button
-              onClick={() => alert("Constructor de workflows: próximamente")}
-              className="rounded-full px-4 py-2 text-sm font-semibold text-white shadow hover:scale-[1.02] transition"
-              style={{ background: `linear-gradient(90deg, ${BRAND_A} 0%, ${BRAND_B} 100%)` }}
-            >
-              Nuevo workflow
-            </button>
+            
           </div>
         </div>
       </header>
