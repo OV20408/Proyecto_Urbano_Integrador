@@ -227,6 +227,35 @@ Obtener logs de un workflow
   - `limit` (int, default: 100)
 - **Auth:** Opcional
 
+### GET /api/workflows/pm2/users
+Obtener usuarios que tienen workflows relacionados con PM2.5 y sus umbrales máximos
+- **Auth:** Opcional
+- **Descripción:** Busca todos los usuarios que tienen workflows activos relacionados con PM2.5 (en el campo `disparador`, `condicion` o `nombre`), extrae el umbral máximo de PM2.5 de cada workflow y devuelve el umbral máximo por usuario.
+
+**Respuesta:**
+```json
+{
+  "total": 2,
+  "usuarios": [
+    {
+      "usuario_id": 1,
+      "umbral_maximo": 40.0
+    },
+    {
+      "usuario_id": 3,
+      "umbral_maximo": 35.0
+    }
+  ]
+}
+```
+
+**Notas:**
+- Solo incluye usuarios con workflows activos (`activo = true`)
+- Solo incluye workflows activos
+- Busca "pm2.5" o "pm2" en los campos `disparador`, `condicion` y `nombre`
+- Extrae el umbral usando expresiones regulares (soporta formatos como "PM2.5 ≥ 40", "PM2.5 > 35", "PM2.5 >= 40 µg/m³", etc.)
+- Si un usuario tiene múltiples workflows con PM2.5, devuelve el umbral máximo
+
 ### POST /api/workflows
 Crear un nuevo workflow
 - **Auth:** Requerido

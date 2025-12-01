@@ -266,3 +266,5 @@ Usa los endpoints `/api/open-meteo/realtime` para obtener los últimos datos gua
 
 
 
+
+

@@ -1,6 +1,7 @@
 import { sequelize } from '../config/db.js';
 import Workflow from '../models/Workflow.js';
 import LogWorkflow from '../models/LogWorkflow.js';
+import UsuarioWorkflow from '../models/UsuarioWorkflow.js';
 
 // GET /api/workflows - Obtener todos los workflows
 export const getAllWorkflows = async (req, res) => {
@@ -196,6 +197,118 @@ export const getWorkflowLogs = async (req, res) => {
     res.status(500).json({ message: 'Error al obtener logs del workflow', error: error.message });
   }
 };
+
+/**
+ * Extrae el umbral de PM2.5 de un texto
+ * Busca patrones como: "PM2.5 ≥ 40", "PM2.5 > 35", "PM2.5 >= 40 µg/m³", etc.
+ */
+function extractPM2Threshold(text) {
+  if (!text) return null;
+  
+  // Patrones para buscar umbrales de PM2.5
+  const patterns = [
+    /PM2\.?5\s*[≥>=]\s*(\d+\.?\d*)/i,  // PM2.5 ≥ 40 o PM2.5 >= 40
+    /PM2\.?5\s*>\s*(\d+\.?\d*)/i,      // PM2.5 > 35
+    /PM2\.?5\s*:\s*(\d+\.?\d*)/i,      // PM2.5: 40
+    /PM2\.?5\s+(\d+\.?\d*)/i,          // PM2.5 40
+    /(\d+\.?\d*)\s*µg\/m³.*PM2\.?5/i,  // 40 µg/m³ PM2.5
+    /PM2\.?5.*?(\d+\.?\d*)\s*µg/i      // PM2.5 ... 40 µg
+  ];
+  
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (match && match[1]) {
+      const value = parseFloat(match[1]);
+      if (!isNaN(value) && value > 0) {
+        return value;
+      }
+    }
+  }
+  
+  return null;
+}
+
+// GET /api/workflows/pm2/users - Obtener usuarios con workflows de PM2.5 y sus umbrales máximos
+export const getUsersWithPM2Workflows = async (req, res) => {
+  try {
+    // Buscar todos los usuario_workflows que tienen workflows activos
+    const usuarioWorkflows = await UsuarioWorkflow.findAll({
+      where: {
+        activo: true
+      },
+      include: [
+        {
+          model: Workflow,
+          as: 'workflow',
+          where: {
+            activo: true
+          },
+          required: true
+        }
+      ]
+    });
+
+    // Procesar resultados: filtrar workflows con PM2.5 y extraer umbrales
+    const userThresholds = new Map(); // Map<usuario_id, umbral_maximo>
+
+    for (const uw of usuarioWorkflows) {
+      const workflow = uw.workflow;
+      const usuarioId = uw.usuario_id;
+
+      if (!workflow) continue;
+
+      // Buscar PM2.5 en disparador o condicion
+      const disparador = workflow.disparador || '';
+      const condicion = workflow.condicion || '';
+      const nombre = workflow.nombre || '';
+      
+      const textToSearch = `${disparador} ${condicion} ${nombre}`.toLowerCase();
+      
+      // Verificar si contiene PM2.5 o PM2
+      if (textToSearch.includes('pm2.5') || textToSearch.includes('pm2')) {
+        // Extraer umbral del disparador
+        let threshold = extractPM2Threshold(disparador);
+        
+        // Si no se encontró en disparador, buscar en condicion
+        if (!threshold) {
+          threshold = extractPM2Threshold(condicion);
+        }
+        
+        // Si no se encontró en condicion, buscar en nombre
+        if (!threshold) {
+          threshold = extractPM2Threshold(nombre);
+        }
+
+        if (threshold !== null) {
+          // Actualizar el umbral máximo para este usuario
+          const currentMax = userThresholds.get(usuarioId);
+          if (!currentMax || threshold > currentMax) {
+            userThresholds.set(usuarioId, threshold);
+          }
+        }
+      }
+    }
+
+    // Convertir Map a array de objetos
+    const result = Array.from(userThresholds.entries()).map(([usuario_id, umbral_maximo]) => ({
+      usuario_id,
+      umbral_maximo
+    }));
+
+    res.json({
+      total: result.length,
+      usuarios: result
+    });
+  } catch (error) {
+    console.error('Error al obtener usuarios con workflows PM2.5:', error);
+    res.status(500).json({ 
+      message: 'Error al obtener usuarios con workflows PM2.5', 
+      error: error.message 
+    });
+  }
+};
+
+
 
 
 
