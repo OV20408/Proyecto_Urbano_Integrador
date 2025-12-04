@@ -12,8 +12,9 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useNavigate } from "react-router-dom";
-import { WebSocketDemo } from "../components/WebSocketDemo";
+
 import { useDashboardData } from "../hooks/useDashboardData";
+import { useWebSocketRealtime } from "../hooks/useWebSocketRealtime";
 
 const ORANGE = "#f39a2e";
 const DEEP_ORANGE = "#f07a09";
@@ -76,8 +77,15 @@ const DashboardHeader = () => {
 
 const Dashboard: React.FC = () => {
   const token = localStorage.getItem("token") ?? "";
+
+  // API DATA (histórico)
   const { loading, pm25Trend, mediciones, realtimeKpi } =
     useDashboardData(token);
+
+  // WEBSOCKET (tiempo real)
+  const { realtime } = useWebSocketRealtime(
+    "wss://proyect-meos.onrender.com/ws/realtime"
+  );
 
   if (loading) {
     return (
@@ -87,7 +95,13 @@ const Dashboard: React.FC = () => {
     );
   }
 
-  // 24 últimas mediciones
+  // Elige el KPI más actualizado:
+  const kpi =
+    realtime?.datos?.[0]?.mediciones?.[0] ??
+    realtimeKpi ?? // fallback API realtime
+    null;
+
+  // 24 últimas mediciones para gráficos
   const ultimas24 = mediciones.slice(0, 24);
 
   const pm10Trend = ultimas24.map((m) => ({
@@ -114,21 +128,12 @@ const Dashboard: React.FC = () => {
 
         {/* ==================== KPIs ==================== */}
         <section className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <KpiCard
-            label="PM2.5 actual"
-            value={`${realtimeKpi?.pm25 ?? "--"} µg/m³`}
-          />
-          <KpiCard
-            label="PM10 actual"
-            value={`${realtimeKpi?.pm10 ?? "--"} µg/m³`}
-          />
-          <KpiCard
-            label="NO₂ actual"
-            value={`${realtimeKpi?.no2 ?? "--"} µg/m³`}
-          />
+          <KpiCard label="PM2.5 actual" value={`${kpi?.pm25 ?? "--"} µg/m³`} />
+          <KpiCard label="PM10 actual" value={`${kpi?.pm10 ?? "--"} µg/m³`} />
+          <KpiCard label="NO₂ actual" value={`${kpi?.no2 ?? "--"} µg/m³`} />
           <KpiCard
             label="Temperatura"
-            value={`${realtimeKpi?.temperatura ?? "--"} °C`}
+            value={`${kpi?.temperatura ?? "--"} °C`}
           />
         </section>
 
@@ -211,7 +216,7 @@ const Dashboard: React.FC = () => {
 
         </section>
 
-        {/* ==================== TEMPERATURA / HUMEDAD ==================== */}
+        {/* ==================== TEMP / HUM ==================== */}
         <section className="mt-6">
           <div className="rounded-3xl bg-white shadow border border-orange-100 p-6">
             <h2 className="text-lg font-semibold text-gray-700 mb-4">
@@ -233,10 +238,6 @@ const Dashboard: React.FC = () => {
           </div>
         </section>
 
-        {/* WebSocket */}
-        <section className="mt-6">
-          <WebSocketDemo />
-        </section>
       </div>
     </main>
   );

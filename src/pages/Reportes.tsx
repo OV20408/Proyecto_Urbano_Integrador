@@ -220,20 +220,6 @@ export default function Reportes() {
           </div>
           <div className="flex gap-2">
             <button
-              onClick={regenerar}
-              className="rounded-full px-4 py-2 text-sm font-semibold text-white shadow hover:scale-[1.02] transition"
-              style={{ background: `linear-gradient(90deg, ${BRAND_A} 0%, ${BRAND_B} 100%)` }}
-            >
-              Generar ahora
-            </button>
-            <button
-              onClick={marcarEnviado}
-              className="rounded-full px-4 py-2 text-sm font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100"
-              title="Marca los seleccionados como Enviado"
-            >
-              Marcar como enviado
-            </button>
-            <button
               onClick={exportCSV}
               className="rounded-full px-4 py-2 text-sm font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100"
             >
