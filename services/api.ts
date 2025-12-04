@@ -1,5 +1,3 @@
-// src/services/api.ts
-
 const API = "https://proyect-meos.onrender.com";
 
 export async function fetchMediciones(limit = 200) {

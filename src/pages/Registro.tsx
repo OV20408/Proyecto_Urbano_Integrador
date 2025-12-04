@@ -64,7 +64,7 @@ const [step, setStep] = useState<1 | 2>(1)
 
       if (response.ok) {
         console.log('✅ Usuario registrado:', data)
-        navigate('/login')
+        navigate('/dashboard')
       } else {
         setErrorMessage(data.message || 'Error al registrar usuario')
       }

@@ -98,7 +98,7 @@ const Login = () => {
                 </p>
               </div>
 
-              <div className="text-white/80 text-sm">www.yoursite.com</div>
+              <div className="text-white/80 text-sm">www.maro.com</div>
             </div>
           </div>
 

@@ -3,41 +3,42 @@ import {
   AreaChart, Area, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
 import { Link } from "react-router-dom";
+import { getPredictionData, generateSampleInput } from "../../services/apiModelo";
 
 /* ===========================
-   Datos mock (reemplazables)
+   Datos mock iniciales (se reemplazarán con la API)
    =========================== */
 type Pred = {
   id: string;
-  hora: string;         // "08:00"
-  zona: string;         // "Centro", "Equipetrol", etc.
+  horaPred: string;
+  horizonte: string;        // "1hr", "12hr", "24hr", etc.
   pm25: number;         // μg/m³ (predicho)
-  ica: number;          // 0-100 (mock)
+  ica: number;          // 1-6 (API)
   riesgo: "Alto" | "Medio" | "Bajo";
   confianza: number;    // %
   serie: number[];      // para sparkline
 };
 
 const BASE: Pred[] = [
-  { id: "P-1001", hora: "08:00", zona: "Centro",     pm25: 42, ica: 78, riesgo: "Alto",  confianza: 86, serie: [24,28,31,36,40,42,41] },
-  { id: "P-1002", hora: "09:00", zona: "Norte",      pm25: 33, ica: 70, riesgo: "Medio", confianza: 81, serie: [20,22,25,28,31,33,30] },
-  { id: "P-1003", hora: "10:00", zona: "Equipetrol", pm25: 21, ica: 52, riesgo: "Bajo",  confianza: 74, serie: [12,14,16,18,20,21,19] },
-  { id: "P-1004", hora: "11:00", zona: "Plan 3,000", pm25: 37, ica: 73, riesgo: "Medio", confianza: 79, serie: [21,24,27,30,34,37,35] },
-  { id: "P-1005", hora: "12:00", zona: "Sur",        pm25: 46, ica: 82, riesgo: "Alto",  confianza: 88, serie: [26,30,33,38,42,46,44] },
+  { id: "P-1001", horaPred: "08:00", horizonte: "1hr", pm25: 42, ica: 3, riesgo: "Alto", confianza: 86, serie: [24, 28, 31, 36, 40, 42, 41] },
+  { id: "P-1002", horaPred: "09:00", horizonte: "12hr", pm25: 33, ica: 2, riesgo: "Medio", confianza: 81, serie: [20, 22, 25, 28, 31, 33, 30] },
+  { id: "P-1003", horaPred: "10:00", horizonte: "24hr", pm25: 21, ica: 1, riesgo: "Bajo", confianza: 74, serie: [12, 14, 16, 18, 20, 21, 19] },
+  { id: "P-1004", horaPred: "11:00", horizonte: "72hr", pm25: 37, ica: 2, riesgo: "Medio", confianza: 79, serie: [21, 24, 27, 30, 34, 37, 35] },
+  { id: "P-1005", horaPred: "12:00", horizonte: "168hr", pm25: 46, ica: 4, riesgo: "Alto", confianza: 88, serie: [26, 30, 33, 38, 42, 46, 44] },
 ];
 
 /* Colores de marca */
 const brandStart = "#f39a2e"; // naranja claro
-const brandEnd   = "#f07a09"; // naranja intenso
-const brandAlt   = "#ff9900"; // otra acentuación
+const brandEnd = "#f07a09"; // naranja intenso
+const brandAlt = "#ff9900"; // otra acentuación
 
 function BadgeRiesgo({ r }: { r: Pred["riesgo"] }) {
   const cls =
     r === "Alto"
       ? "bg-red-100 text-red-700"
       : r === "Medio"
-      ? "bg-amber-100 text-amber-700"
-      : "bg-emerald-100 text-emerald-700";
+        ? "bg-amber-100 text-amber-700"
+        : "bg-emerald-100 text-emerald-700";
   return (
     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${cls}`}>
       {r}
@@ -59,25 +60,28 @@ function Kpi({ title, value, suffix }: { title: string; value: number; suffix?: 
 
 export default function Predicciones() {
   const [data, setData] = useState<Pred[]>(BASE);
-  const [qZona, setQZona] = useState<string>("Todas");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const [qHorizonte, setQHorizonte] = useState<string>("Todos");
   const [qRiesgo, setQRiesgo] = useState<string>("Todos");
   const [qBuscar, setQBuscar] = useState<string>("");
 
-  const zonas = useMemo(() => ["Todas", ...Array.from(new Set(BASE.map(b => b.zona)))], []);
+  const horizontes = useMemo(() => ["Todos", ...Array.from(new Set(BASE.map(b => b.horizonte)))], []);
   const riesgos = ["Todos", "Alto", "Medio", "Bajo"];
 
   const filtrado = useMemo(() => {
     return data.filter((p) => {
-      const z = qZona === "Todas" || p.zona === qZona;
+      const h = qHorizonte === "Todos" || p.horizonte === qHorizonte;
       const r = qRiesgo === "Todos" || p.riesgo === qRiesgo;
       const b =
         !qBuscar ||
-        p.zona.toLowerCase().includes(qBuscar.toLowerCase()) ||
-        p.hora.includes(qBuscar) ||
+        p.horizonte.toLowerCase().includes(qBuscar.toLowerCase()) ||
+        p.horaPred.includes(qBuscar) ||
         p.id.toLowerCase().includes(qBuscar.toLowerCase());
-      return z && r && b;
+      return h && r && b;
     });
-  }, [data, qZona, qRiesgo, qBuscar]);
+  }, [data, qHorizonte, qRiesgo, qBuscar]);
 
   const kpis = useMemo(() => {
     const total = filtrado.length;
@@ -87,22 +91,55 @@ export default function Predicciones() {
     return { total, alto, medio, bajo };
   }, [filtrado]);
 
-  const regenerate = () => {
-    // Simula “Generar ahora”: varía valores +/- y reordena un poco la serie
-    setData(prev =>
-      prev.map(p => {
-        const delta = (Math.random() * 6) - 3;     // -3 a +3
-        const pm25 = Math.max(8, Math.round(p.pm25 + delta));
-        const ica  = Math.max(35, Math.min(100, Math.round(p.ica + delta * 1.5)));
-        const conf = Math.max(60, Math.min(95, Math.round(p.confianza + (Math.random() * 6 - 3))));
-        let riesgo: Pred["riesgo"] = p.riesgo;
-        if (pm25 >= 40) riesgo = "Alto";
-        else if (pm25 >= 25) riesgo = "Medio";
-        else riesgo = "Bajo";
-        const serie = [...p.serie.slice(1), pm25 - Math.round(Math.random()*4)];
-        return { ...p, pm25, ica, confianza: conf, riesgo, serie };
-      })
-    );
+  const regenerate = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      // 1. Generar datos de entrada (mock de 24h)
+      const inputData = generateSampleInput();
+
+      // 2. Configuración de filas que queremos mostrar
+      const rowsConfig = [
+        { id: "P-1001", horizonHours: 1, label: "1hr" },
+        { id: "P-1002", horizonHours: 12, label: "12hr" },
+        { id: "P-1003", horizonHours: 24, label: "24hr" },
+        { id: "P-1004", horizonHours: 72, label: "72hr" },
+        { id: "P-1005", horizonHours: 168, label: "168hr" },
+      ];
+
+      // 3. Obtener predicciones en paralelo para cada fila
+      const newPredictions = await Promise.all(
+        rowsConfig.map(async (row) => {
+          // Llamada a la API all-in-one
+          const apiData = await getPredictionData(inputData, row.horizonHours);
+
+          // Calcular horaPred (hora actual + horizonte)
+          const now = new Date();
+          const targetTime = new Date(now.getTime() + row.horizonHours * 60 * 60 * 1000);
+          const horaPred = targetTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+          return {
+            id: row.id,
+            horaPred: horaPred,
+            horizonte: row.label,
+            pm25: Math.round(apiData.pm25),
+            ica: apiData.ica, // Valor 1-6
+            riesgo: apiData.riesgo,
+            confianza: apiData.confianza,
+            serie: apiData.tendencia, // Array de 5 valores
+          };
+        })
+      );
+
+      setData(newPredictions);
+    } catch (err: any) {
+      console.error("Error fetching predictions:", err);
+      // Mostrar el mensaje real del error para depuración
+      setError(err.message || "Error desconocido al conectar con la API.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -112,15 +149,27 @@ export default function Predicciones() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-slate-800">Predicciones</h1>
-            <p className="text-sm text-slate-500">Modelos predictivos (mock) · Santa Cruz</p>
+            <p className="text-sm text-slate-500">Modelos predictivos (XGBoost) · Santa Cruz</p>
           </div>
           <div className="flex items-center gap-3">
             <button
               onClick={regenerate}
-              className="rounded-full px-4 py-2 text-sm font-semibold text-white shadow transition-transform hover:scale-[1.02]"
+              disabled={loading}
+              className={`rounded-full px-4 py-2 text-sm font-semibold text-white shadow transition-transform ${loading ? 'opacity-70 cursor-wait' : 'hover:scale-[1.02]'
+                }`}
               style={{ background: `linear-gradient(90deg, ${brandStart} 0%, ${brandEnd} 100%)` }}
             >
-              Generar ahora
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Generando...
+                </span>
+              ) : (
+                "Generar ahora"
+              )}
             </button>
             <Link
               to="/workflows"
@@ -134,6 +183,14 @@ export default function Predicciones() {
 
       {/* Contenido */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 space-y-6">
+        {/* Error Message */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative" role="alert">
+            <strong className="font-bold">Error: </strong>
+            <span className="block sm:inline">{error}</span>
+          </div>
+        )}
+
         {/* KPIs */}
         <section className="grid grid-cols-2 md:grid-cols-4 gap-5">
           <Kpi title="Total hoy" value={kpis.total} />
@@ -147,11 +204,11 @@ export default function Predicciones() {
           <div className="flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
             <div className="flex flex-wrap gap-3">
               <select
-                value={qZona}
-                onChange={(e) => setQZona(e.target.value)}
+                value={qHorizonte}
+                onChange={(e) => setQHorizonte(e.target.value)}
                 className="rounded-full border-slate-300 text-sm px-3 py-2"
               >
-                {zonas.map(z => <option key={z}>{z}</option>)}
+                {horizontes.map(h => <option key={h}>{h}</option>)}
               </select>
 
               <select
@@ -167,7 +224,7 @@ export default function Predicciones() {
               <input
                 value={qBuscar}
                 onChange={(e) => setQBuscar(e.target.value)}
-                placeholder="Buscar (ID, zona, hora)"
+                placeholder="Buscar (ID, hora)"
                 className="rounded-full border border-slate-300 text-sm px-4 py-2 pr-8 w-[260px]"
               />
               <span className="absolute right-3 top-2.5 text-slate-400">⌕</span>
@@ -183,21 +240,21 @@ export default function Predicciones() {
                 <tr className="text-left text-slate-600 border-b">
                   <th className="py-3 px-3">ID</th>
                   <th className="py-3 px-3">Hora</th>
-                  <th className="py-3 px-3">Zona</th>
+                  <th className="py-3 px-3">Horizonte</th>
                   <th className="py-3 px-3">PM2.5 (μg/m³)</th>
                   <th className="py-3 px-3">ICA</th>
                   <th className="py-3 px-3">Riesgo</th>
                   <th className="py-3 px-3">Confianza</th>
                   <th className="py-3 px-3">Tendencia</th>
-                  <th className="py-3 px-3">Acciones</th>
+                  {/* <th className="py-3 px-3">Acciones</th> */}
                 </tr>
               </thead>
               <tbody className="divide-y">
                 {filtrado.map((p) => (
                   <tr key={p.id} className="hover:bg-slate-50">
                     <td className="py-3 px-3 font-semibold text-slate-800">{p.id}</td>
-                    <td className="py-3 px-3">{p.hora}</td>
-                    <td className="py-3 px-3">{p.zona}</td>
+                    <td className="py-3 px-3">{p.horaPred}</td>
+                    <td className="py-3 px-3">{p.horizonte}</td>
                     <td className="py-3 px-3 font-medium">{p.pm25}</td>
                     <td className="py-3 px-3">{p.ica}</td>
                     <td className="py-3 px-3"><BadgeRiesgo r={p.riesgo} /></td>
@@ -224,7 +281,7 @@ export default function Predicciones() {
                       </div>
                     </td>
                     <td className="py-3 px-3">
-                      <div className="flex gap-2">
+                      {/* <div className="flex gap-2">
                         <button
                           className="px-3 py-1 rounded-full text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100"
                           title="Ver detalle (mock)"
@@ -239,7 +296,7 @@ export default function Predicciones() {
                         >
                           Generar ahora
                         </button>
-                      </div>
+                      </div> */}
                     </td>
                   </tr>
                 ))}
@@ -259,9 +316,9 @@ export default function Predicciones() {
         <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <h3 className="font-semibold text-slate-800 mb-2">Notas</h3>
           <ul className="text-sm text-slate-600 list-disc pl-5 space-y-1">
-            <li><b>PM2.5</b> es la concentración (μg/m³). Umbrales mock: &lt;25 = Bajo, 25–39 = Medio, ≥40 = Alto.</li>
-            <li><b>ICA</b> (Índice de Calidad del Aire) normalizado 0–100 (mock para demo).</li>
-            <li><b>Confianza</b> es la seguridad del modelo (mock). Luego vendrá del servicio real.</li>
+            <li><b>PM2.5</b> es la concentración (μg/m³). Umbrales: &lt;35 = Bajo, 35–55 = Medio, &gt;55 = Alto.</li>
+            <li><b>ICA</b> (Índice de Calidad del Aire) nivel 1 (Buena) a 6 (Extremadamente desfavorable).</li>
+            <li><b>Confianza</b> es el R2 promedio del modelo para el target PM2.5.</li>
           </ul>
         </section>
       </main>
