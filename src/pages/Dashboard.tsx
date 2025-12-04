@@ -1,80 +1,49 @@
- import React from "react";
+// src/pages/Dashboard.tsx
+import React from "react";
 import {
-  LineChart, Line,
-  BarChart, Bar,
-  PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
 } from "recharts";
 import { useNavigate } from "react-router-dom";
 import { WebSocketDemo } from "../components/WebSocketDemo";
+import { useDashboardData } from "../hooks/useDashboardData";
 
-/** =========================
- *  Datos de ejemplo (hardcodeados)
- *  ========================= */
-type TrendPoint = { time: string; aqi: number };
-type AlertsByType = { type: string; count: number };
-type SourceShare = { name: string; value: number };
-type RecentAlert = { id: string; zone: string; pollutant: string; level: string; time: string };
-
-const aqiTrend: TrendPoint[] = [
-  { time: "08:00", aqi: 42 },
-  { time: "10:00", aqi: 55 },
-  { time: "12:00", aqi: 71 },
-  { time: "14:00", aqi: 64 },
-  { time: "16:00", aqi: 59 },
-  { time: "18:00", aqi: 48 },
-  { time: "20:00", aqi: 45 },
-];
-
-const alertsData: AlertsByType[] = [
-  { type: "Humo", count: 12 },
-  { type: "Olores", count: 8 },
-  { type: "Ruido", count: 15 },
-  { type: "Tráfico", count: 10 },
-];
-
-const sourcesShare: SourceShare[] = [
-  { name: "Industrial", value: 45 },
-  { name: "Tránsito", value: 30 },
-  { name: "Doméstico", value: 15 },
-  { name: "Otros", value: 10 },
-];
-
-const recentAlerts: RecentAlert[] = [
-  { id: "AL-1021", zone: "Centro", pollutant: "PM2.5", level: "Alto", time: "hoy 10:35" },
-  { id: "AL-1020", zone: "Equipetrol", pollutant: "NO₂", level: "Medio", time: "hoy 09:50" },
-  { id: "AL-1019", zone: "Plan 3,000", pollutant: "PM10", level: "Alto", time: "ayer 18:12" },
-  { id: "AL-1018", zone: "Villa 1ro de Mayo", pollutant: "O₃", level: "Bajo", time: "ayer 16:40" },
-];
-
-/** Paleta alineada al landing */
 const ORANGE = "#f39a2e";
 const DEEP_ORANGE = "#f07a09";
 const LIGHT_ORANGE = "#f09e47";
-const WARN = "#ff9900";
-const PIE_COLORS = [ORANGE, DEEP_ORANGE, LIGHT_ORANGE, WARN];
+const BLUE = "#3b82f6";
 
-/** Utils de UI */
-function KpiCard({
+const KpiCard = ({
   label,
   value,
   hint,
-}: { label: string; value: string; hint?: string }) {
-  return (
-    <div className="rounded-2xl p-5 bg-white/90 shadow hover:shadow-lg transition border border-orange-100">
-      <div className="text-sm text-gray-500">{label}</div>
-      <div className="mt-2 text-3xl font-bold text-gray-800">{value}</div>
-      {hint && <div className="mt-1 text-xs text-gray-500">{hint}</div>}
-    </div>
-  );
-}
+}: {
+  label: string;
+  value: string | number;
+  hint?: string;
+}) => (
+  <div className="rounded-2xl p-5 bg-white shadow hover:shadow-lg transition border border-orange-100">
+    <div className="text-sm text-gray-500">{label}</div>
+    <div className="mt-2 text-3xl font-bold text-gray-800">{value}</div>
+    {hint && <div className="mt-1 text-xs text-gray-500">{hint}</div>}
+  </div>
+);
 
-const DashboardHeader: React.FC = () => {
+const DashboardHeader = () => {
   const navigate = useNavigate();
   return (
     <div
       className="rounded-3xl px-6 py-6 md:px-10 md:py-8 text-white shadow"
-      style={{ background: `linear-gradient(90deg, ${ORANGE} 0%, ${DEEP_ORANGE} 100%)` }}
+      style={{
+        background: `linear-gradient(90deg, ${ORANGE} 0%, ${DEEP_ORANGE} 100%)`,
+      }}
     >
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
@@ -82,9 +51,10 @@ const DashboardHeader: React.FC = () => {
             Panel Ambiental — Santa Cruz
           </h1>
           <p className="text-white/90 text-sm">
-            Vista general de datos Estadisticos.
+            Vista general de los datos ambientales en tiempo real.
           </p>
         </div>
+
         <div className="flex gap-3">
           <button
             onClick={() => navigate("/")}
@@ -105,29 +75,71 @@ const DashboardHeader: React.FC = () => {
 };
 
 const Dashboard: React.FC = () => {
+  const token = localStorage.getItem("token") ?? "";
+  const { loading, pm25Trend, mediciones, realtimeKpi } =
+    useDashboardData(token);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-xl">
+        Cargando datos…
+      </div>
+    );
+  }
+
+  // 24 últimas mediciones
+  const ultimas24 = mediciones.slice(0, 24);
+
+  const pm10Trend = ultimas24.map((m) => ({
+    time: new Date(m.fecha_hora).getHours() + ":00",
+    value: m.pm10,
+  }));
+
+  const no2Trend = ultimas24.map((m) => ({
+    time: new Date(m.fecha_hora).getHours() + ":00",
+    value: m.no2,
+  }));
+
+  const tempHumTrend = ultimas24.map((m) => ({
+    time: new Date(m.fecha_hora).getHours() + ":00",
+    temp: m.temperatura,
+    hum: m.humedad_relativa,
+  }));
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100">
       <div className="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-10">
-        {/* Header */}
+
         <DashboardHeader />
 
-        {/* KPIs */}
+        {/* ==================== KPIs ==================== */}
         <section className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <KpiCard label="ICA promedio (hoy)" value="58 — Moderado" hint="08:00–20:00" />
-          <KpiCard label="Zonas en alerta" value="3" hint="Centro, P3K, Equipetrol" />
-          <KpiCard label="Alertas enviadas" value="27" hint="Últimas 24 h" />
-          <KpiCard label="Quejas ciudadanas" value="12" hint="Últimas 24 h" />
+          <KpiCard
+            label="PM2.5 actual"
+            value={`${realtimeKpi?.pm25 ?? "--"} µg/m³`}
+          />
+          <KpiCard
+            label="PM10 actual"
+            value={`${realtimeKpi?.pm10 ?? "--"} µg/m³`}
+          />
+          <KpiCard
+            label="NO₂ actual"
+            value={`${realtimeKpi?.no2 ?? "--"} µg/m³`}
+          />
+          <KpiCard
+            label="Temperatura"
+            value={`${realtimeKpi?.temperatura ?? "--"} °C`}
+          />
         </section>
 
-        {/* Gráficos principales */}
+        {/* ==================== POWER BI (NO SE TOCA) ==================== */}
         <section className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="rounded-3xl bg-white shadow border border-orange-100 overflow-hidden xl:col-span-3">
-            <div className="p-5 flex items-center justify-between">
+            <div className="p-5">
               <h2 className="text-lg font-semibold text-gray-700">
                 Power BI — Calidad del Aire Santa Cruz
               </h2>
             </div>
-
             <div className="w-full h-[700px]">
               <iframe
                 title="powerbi_urbano"
@@ -138,130 +150,90 @@ const Dashboard: React.FC = () => {
               />
             </div>
           </div>
-
-
-
-          
-
         </section>
 
-        {/* Fuente/Composición + Power BI + Tabla */}
+        {/* ==================== GRÁFICOS REALES ==================== */}
         <section className="mt-6 grid grid-cols-1 xl:grid-cols-3 gap-6">
-          {/* Pie de fuentes */}
-          <div className="rounded-3xl bg-white shadow border border-orange-100">
-            <div className="p-5">
-              <h2 className="text-lg font-semibold text-gray-700">Contribución por fuente</h2>
-            </div>
-            <div className="h-72 px-2 pb-6">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={sourcesShare}
-                    dataKey="value"
-                    nameKey="name"
-                    outerRadius={90}
-                    label
-                  >
-                    {sourcesShare.map((_, i) => (
-                      <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                    ))}
-                  </Pie>
+
+          {/* Tendencia PM2.5 */}
+          <div className="rounded-3xl bg-white shadow border border-orange-100 p-6">
+            <h2 className="text-lg font-semibold text-gray-700 mb-4">
+              Tendencia PM2.5 (últimas horas)
+            </h2>
+            <div className="h-72">
+              <ResponsiveContainer>
+                <LineChart data={pm25Trend}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="time" />
+                  <YAxis />
                   <Tooltip />
-                </PieChart>
+                  <Line type="monotone" dataKey="value" stroke={ORANGE} />
+                </LineChart>
               </ResponsiveContainer>
             </div>
           </div>
 
-
-          {/* Power BI Placeholder (reemplazar después) */}
-          {/* Power BI — Público */}
-          {/* Alertas por tipo (barras) */}
-          <div className="col-span-1 rounded-3xl bg-white shadow border border-orange-100">
-            <div className="p-5 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-700">Alertas por tipo (24 h)</h2>
-              <span className="text-xs px-3 py-1 rounded-full"
-                style={{ background: `${WARN}15`, color: WARN }}
-              >
-                Alerta
-              </span>
-            </div>
-            <div className="h-72 px-2 pb-6">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={alertsData}>
-                  <CartesianGrid strokeDasharray="4 4" stroke="#eee" />
-                  <XAxis dataKey="type" />
+          {/* Tendencia PM10 */}
+          <div className="rounded-3xl bg-white shadow border border-orange-100 p-6">
+            <h2 className="text-lg font-semibold text-gray-700 mb-4">
+              Tendencia PM10 (últimas horas)
+            </h2>
+            <div className="h-72">
+              <ResponsiveContainer>
+                <LineChart data={pm10Trend}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="time" />
                   <YAxis />
                   <Tooltip />
-                  <Bar dataKey="count" radius={[8, 8, 0, 0]} fill={ORANGE} />
+                  <Line type="monotone" dataKey="value" stroke={DEEP_ORANGE} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Tendencia NO2 */}
+          <div className="rounded-3xl bg-white shadow border border-orange-100 p-6">
+            <h2 className="text-lg font-semibold text-gray-700 mb-4">
+              Tendencia NO₂ (últimas horas)
+            </h2>
+            <div className="h-72">
+              <ResponsiveContainer>
+                <LineChart data={no2Trend}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="time" />
+                  <YAxis />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="value" stroke={BLUE} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+        </section>
+
+        {/* ==================== TEMPERATURA / HUMEDAD ==================== */}
+        <section className="mt-6">
+          <div className="rounded-3xl bg-white shadow border border-orange-100 p-6">
+            <h2 className="text-lg font-semibold text-gray-700 mb-4">
+              Temperatura y humedad (últimas horas)
+            </h2>
+
+            <div className="h-80">
+              <ResponsiveContainer>
+                <BarChart data={tempHumTrend}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="time" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="temp" fill={ORANGE} name="Temp (°C)" />
+                  <Bar dataKey="hum" fill={BLUE} name="Humedad (%)" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </div>
-
-
-          
-
-          {/* Tabla — alertas recientes */}
-          <div className="rounded-3xl bg-white shadow border border-orange-100 overflow-hidden">
-            <div className="p-5">
-              <h2 className="text-lg font-semibold text-gray-700">Alertas recientes</h2>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="min-w-full text-sm">
-                <thead className="bg-orange-50 text-gray-600">
-                  <tr>
-                    <th className="text-left py-3 px-4">ID</th>
-                    <th className="text-left py-3 px-4">Zona</th>
-                    <th className="text-left py-3 px-4">Contaminante</th>
-                    <th className="text-left py-3 px-4">Nivel</th>
-                    <th className="text-left py-3 px-4">Hora</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentAlerts.map((a, i) => (
-                    <tr key={a.id} className={i % 2 === 0 ? "bg-white" : "bg-orange-50/40"}>
-                      <td className="py-3 px-4 font-medium">{a.id}</td>
-                      <td className="py-3 px-4">{a.zone}</td>
-                      <td className="py-3 px-4">{a.pollutant}</td>
-                      <td className="py-3 px-4">
-                        <span
-                          className="px-2 py-1 rounded-full text-xs font-semibold"
-                          style={{
-                            background:
-                              a.level === "Alto"
-                                ? `${WARN}20`
-                                : a.level === "Medio"
-                                ? `${ORANGE}20`
-                                : "#ecfeff",
-                            color:
-                              a.level === "Alto"
-                                ? WARN
-                                : a.level === "Medio"
-                                ? ORANGE
-                                : "#0ea5e9",
-                          }}
-                        >
-                          {a.level}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4">{a.time}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="p-4 text-right">
-              <button
-                className="text-sm px-4 py-2 rounded-full text-white shadow"
-                style={{ background: `linear-gradient(90deg, ${ORANGE} 0%, ${DEEP_ORANGE} 100%)` }}
-              >
-                Exportar CSV
-              </button>
-            </div>
-          </div>
         </section>
 
-        {/* WebSocket Demo */}
+        {/* WebSocket */}
         <section className="mt-6">
           <WebSocketDemo />
         </section>

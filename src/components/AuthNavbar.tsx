@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { useAuth } from "../pages/AuthContext"; // ✅ Usa tu contexto global
+import { useAuth } from "../pages/AuthContext";
 
 const ORANGE = "#f39a2e";
 const DEEP_ORANGE = "#f07a09";
@@ -19,10 +19,10 @@ const AuthNavbar: React.FC = () => {
 
   // ✅ Datos globales desde el contexto
   const { user, logout } = useAuth();
-  const userName = user?.name || "Invitado";
+  const userName = user?.nombre || "Invitado"; // ✅ CORREGIDO: usar "nombre" en vez de "name"
 
   const handleLogout = () => {
-    logout(); // ✅ borra token + user
+    logout();
     navigate("/login");
   };
 
