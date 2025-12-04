@@ -19,6 +19,19 @@ type Pred = {
   serie: number[];      // para sparkline
 };
 
+const ICA_LABELS = {
+  1: "Buena",
+  2: "Aceptable",
+  3: "Moderada",
+  4: "Mala",
+  5: "Muy mala",
+  6: "Extremadamente desfavorable",
+} as const;
+
+function getIcaLabel(value: number) {
+  return ICA_LABELS[value as keyof typeof ICA_LABELS] ?? "Sin dato";
+}
+
 const BASE: Pred[] = [
   { id: "P-1001", horaPred: "08:00", horizonte: "1hr", pm25: 42, ica: 3, riesgo: "Alto", confianza: 86, serie: [24, 28, 31, 36, 40, 42, 41] },
   { id: "P-1002", horaPred: "09:00", horizonte: "12hr", pm25: 33, ica: 2, riesgo: "Medio", confianza: 81, serie: [20, 22, 25, 28, 31, 33, 30] },
@@ -256,7 +269,7 @@ export default function Predicciones() {
                     <td className="py-3 px-3">{p.horaPred}</td>
                     <td className="py-3 px-3">{p.horizonte}</td>
                     <td className="py-3 px-3 font-medium">{p.pm25}</td>
-                    <td className="py-3 px-3">{p.ica}</td>
+                    <td className="py-3 px-3">{`${p.ica} · ${getIcaLabel(p.ica)}`}</td>
                     <td className="py-3 px-3"><BadgeRiesgo r={p.riesgo} /></td>
                     <td className="py-3 px-3">{p.confianza}%</td>
                     <td className="py-2 px-3">
