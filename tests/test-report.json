@@ -1,0 +1,446 @@
+{
+  "timestamp": "2025-12-04T15:01:05.467Z",
+  "summary": {
+    "total": 33,
+    "passed": 31,
+    "failed": 2,
+    "skipped": 0,
+    "successRate": "93.94%"
+  },
+  "details": [
+    {
+      "name": "GET /api/auth/health",
+      "passed": true,
+      "error": null,
+      "status": 200
+    },
+    {
+      "name": "POST /api/auth/register",
+      "passed": {
+        "usuario_id": 3,
+        "nombre": "Test User API",
+        "email": "test_1764860464368@example.com"
+      },
+      "error": null,
+      "status": 201,
+      "response": {
+        "message": "Usuario registrado correctamente",
+        "user": {
+          "usuario_id": 3,
+          "nombre": "Test User API",
+          "email": "test_1764860464368@example.com"
+        }
+      }
+    },
+    {
+      "name": "POST /api/auth/register (duplicate)",
+      "passed": true,
+      "error": null,
+      "status": 409,
+      "expected": 409
+    },
+    {
+      "name": "POST /api/auth/register (invalid)",
+      "passed": true,
+      "error": null,
+      "status": 400,
+      "expected": 400
+    },
+    {
+      "name": "POST /api/auth/login",
+      "passed": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjMsImVtYWlsIjoidGVzdF8xNzY0ODYwNDY0MzY4QGV4YW1wbGUuY29tIiwiaWF0IjoxNzY0ODYwNDY0LCJleHAiOjE3NjQ4Njc2NjR9.81P_yyB0QofMxXH6nbu_GKNm_UGJK5OXzEYiyV1f6fU",
+      "error": null,
+      "status": 200,
+      "hasToken": true
+    },
+    {
+      "name": "POST /api/auth/login (invalid)",
+      "passed": true,
+      "error": null,
+      "status": 401,
+      "expected": 401
+    },
+    {
+      "name": "GET /api/zonas",
+      "passed": true,
+      "error": null,
+      "status": 200,
+      "count": 8
+    },
+    {
+      "name": "GET /api/zonas/:id",
+      "passed": 1,
+      "error": null,
+      "status": 200
+    },
+    {
+      "name": "POST /api/zonas",
+      "passed": 9,
+      "error": null,
+      "status": 201
+    },
+    {
+      "name": "PUT /api/zonas/:id",
+      "passed": true,
+      "error": null,
+      "status": 200
+    },
+    {
+      "name": "DELETE /api/zonas/:id",
+      "passed": true,
+      "error": null,
+      "status": 200
+    },
+    {
+      "name": "GET /api/mediciones",
+      "passed": true,
+      "error": null,
+      "status": 200,
+      "count": 100
+    },
+    {
+      "name": "GET /api/mediciones/:id",
+      "passed": 1,
+      "error": null,
+      "status": 200
+    },
+    {
+      "name": "POST /api/mediciones",
+      "passed": 1921,
+      "error": null,
+      "status": 201
+    },
+    {
+      "name": "PUT /api/mediciones/:id",
+      "passed": true,
+      "error": null,
+      "status": 200
+    },
+    {
+      "name": "DELETE /api/mediciones/:id",
+      "passed": true,
+      "error": null,
+      "status": 200
+    },
+    {
+      "name": "GET /api/workflows",
+      "passed": true,
+      "error": null,
+      "status": 200,
+      "count": 0
+    },
+    {
+      "name": "GET /api/workflows/:id",
+      "passed": false,
+      "error": "Workflow no encontrado",
+      "status": 404
+    },
+    {
+      "name": "GET /api/workflows/pm2/users",
+      "passed": true,
+      "error": null,
+      "status": 200,
+      "total": 0
+    },
+    {
+      "name": "POST /api/workflows",
+      "passed": 1,
+      "error": null,
+      "status": 201
+    },
+    {
+      "name": "PUT /api/workflows/:id",
+      "passed": true,
+      "error": null,
+      "status": 200
+    },
+    {
+      "name": "GET /api/workflows/:id/logs",
+      "passed": true,
+      "error": null,
+      "status": 200
+    },
+    {
+      "name": "DELETE /api/workflows/:id",
+      "passed": true,
+      "error": null,
+      "status": 200
+    },
+    {
+      "name": "GET /api/open-meteo/status",
+      "passed": true,
+      "error": null,
+      "status": 200
+    },
+    {
+      "name": "GET /api/open-meteo/realtime",
+      "passed": false,
+      "error": null,
+      "status": 200
+    },
+    {
+      "name": "GET /api/open-meteo/realtime/:zona_id",
+      "passed": true,
+      "error": null,
+      "status": 200
+    },
+    {
+      "name": "GET /api/reglas-alertas",
+      "passed": true,
+      "error": null,
+      "status": 200
+    },
+    {
+      "name": "POST /api/reglas-alertas",
+      "passed": 5,
+      "error": null,
+      "status": 201
+    },
+    {
+      "name": "GET /api/alertas",
+      "passed": true,
+      "error": null,
+      "status": 200
+    },
+    {
+      "name": "POST /api/alertas",
+      "passed": 1,
+      "error": null,
+      "status": 201
+    },
+    {
+      "name": "GET /api/usuario-workflows",
+      "passed": true,
+      "error": null,
+      "status": 200
+    },
+    {
+      "name": "GET /api/logs-workflows",
+      "passed": true,
+      "error": null,
+      "status": 200
+    },
+    {
+      "name": "GET /api/reportes",
+      "passed": true,
+      "error": null,
+      "status": 200
+    }
+  ],
+  "errors": [
+    {
+      "test": "GET /api/workflows/:id",
+      "error": "Workflow no encontrado"
+    },
+    {
+      "test": "GET /api/open-meteo/realtime",
+      "error": {
+        "timestamp": "2025-12-04T15:01:05.342Z",
+        "total_zonas": 8,
+        "zonas_con_datos": 8,
+        "datos": [
+          {
+            "zona": {
+              "zona_id": 1,
+              "nombre": "Centro",
+              "codigo": "CENTRO",
+              "latitud": "-17.81460000",
+              "longitud": "-63.15610000"
+            },
+            "mediciones": [
+              {
+                "medicion_id": 72,
+                "fecha_hora": "2025-12-01T07:00:00.000Z",
+                "pm25": 4.1,
+                "pm10": 4.1,
+                "no2": 2.6,
+                "temperatura": 24.5,
+                "humedad_relativa": 87,
+                "precipitacion": 0,
+                "presion_superficial": 959.7,
+                "velocidad_viento": 24,
+                "direccion_viento": 332,
+                "fecha_creacion": "2025-11-28T17:44:40.273Z"
+              }
+            ]
+          },
+          {
+            "zona": {
+              "zona_id": 2,
+              "nombre": "Norte",
+              "codigo": "NORTE",
+              "latitud": "-17.75000000",
+              "longitud": "-63.15000000"
+            },
+            "mediciones": [
+              {
+                "medicion_id": 1425,
+                "fecha_hora": "2025-12-05T16:00:00.000Z",
+                "pm25": 8.4,
+                "pm10": 8.7,
+                "no2": 3.8,
+                "temperatura": 26.4,
+                "humedad_relativa": 59,
+                "precipitacion": 0,
+                "presion_superficial": 966.1,
+                "velocidad_viento": 8.6,
+                "direccion_viento": 158,
+                "fecha_creacion": "2025-12-01T08:42:47.542Z"
+              }
+            ]
+          },
+          {
+            "zona": {
+              "zona_id": 3,
+              "nombre": "Sur",
+              "codigo": "SUR",
+              "latitud": "-17.85000000",
+              "longitud": "-63.16000000"
+            },
+            "mediciones": [
+              {
+                "medicion_id": 1497,
+                "fecha_hora": "2025-12-05T16:00:00.000Z",
+                "pm25": 7,
+                "pm10": 7.3,
+                "no2": 1.9,
+                "temperatura": 26.3,
+                "humedad_relativa": 63,
+                "precipitacion": 0,
+                "presion_superficial": 964.7,
+                "velocidad_viento": 6.9,
+                "direccion_viento": 174,
+                "fecha_creacion": "2025-12-01T08:43:08.015Z"
+              }
+            ]
+          },
+          {
+            "zona": {
+              "zona_id": 4,
+              "nombre": "Equipetrol",
+              "codigo": "EQUIPETROL",
+              "latitud": "-17.78000000",
+              "longitud": "-63.18000000"
+            },
+            "mediciones": [
+              {
+                "medicion_id": 1569,
+                "fecha_hora": "2025-12-05T16:00:00.000Z",
+                "pm25": 8.4,
+                "pm10": 8.7,
+                "no2": 3.8,
+                "temperatura": 26.3,
+                "humedad_relativa": 59,
+                "precipitacion": 0,
+                "presion_superficial": 964.2,
+                "velocidad_viento": 8.6,
+                "direccion_viento": 158,
+                "fecha_creacion": "2025-12-01T08:43:28.669Z"
+              }
+            ]
+          },
+          {
+            "zona": {
+              "zona_id": 5,
+              "nombre": "Plan 3,000",
+              "codigo": "PLAN3000",
+              "latitud": "-17.82000000",
+              "longitud": "-63.14000000"
+            },
+            "mediciones": [
+              {
+                "medicion_id": 1641,
+                "fecha_hora": "2025-12-05T16:00:00.000Z",
+                "pm25": 7,
+                "pm10": 7.3,
+                "no2": 1.9,
+                "temperatura": 26.3,
+                "humedad_relativa": 63,
+                "precipitacion": 0,
+                "presion_superficial": 964.9,
+                "velocidad_viento": 6.9,
+                "direccion_viento": 174,
+                "fecha_creacion": "2025-12-01T08:43:49.167Z"
+              }
+            ]
+          },
+          {
+            "zona": {
+              "zona_id": 6,
+              "nombre": "2do anillo Norte",
+              "codigo": "2ANILLO_N",
+              "latitud": "-17.76000000",
+              "longitud": "-63.14000000"
+            },
+            "mediciones": [
+              {
+                "medicion_id": 1713,
+                "fecha_hora": "2025-12-05T16:00:00.000Z",
+                "pm25": 8.4,
+                "pm10": 8.7,
+                "no2": 3.8,
+                "temperatura": 26.3,
+                "humedad_relativa": 59,
+                "precipitacion": 0,
+                "presion_superficial": 965.8,
+                "velocidad_viento": 8.6,
+                "direccion_viento": 158,
+                "fecha_creacion": "2025-12-01T08:44:09.768Z"
+              }
+            ]
+          },
+          {
+            "zona": {
+              "zona_id": 7,
+              "nombre": "Paila",
+              "codigo": "PAILA",
+              "latitud": "-17.79000000",
+              "longitud": "-63.17000000"
+            },
+            "mediciones": [
+              {
+                "medicion_id": 1785,
+                "fecha_hora": "2025-12-05T16:00:00.000Z",
+                "pm25": 8.4,
+                "pm10": 8.7,
+                "no2": 3.8,
+                "temperatura": 26.3,
+                "humedad_relativa": 59,
+                "precipitacion": 0,
+                "presion_superficial": 964.5,
+                "velocidad_viento": 8.6,
+                "direccion_viento": 158,
+                "fecha_creacion": "2025-12-01T08:44:31.141Z"
+              }
+            ]
+          },
+          {
+            "zona": {
+              "zona_id": 8,
+              "nombre": "Villa 1ro de Mayo",
+              "codigo": "VILLA1MAYO",
+              "latitud": "-17.83000000",
+              "longitud": "-63.15000000"
+            },
+            "mediciones": [
+              {
+                "medicion_id": 1857,
+                "fecha_hora": "2025-12-05T16:00:00.000Z",
+                "pm25": 7,
+                "pm10": 7.3,
+                "no2": 1.9,
+                "temperatura": 26.3,
+                "humedad_relativa": 63,
+                "precipitacion": 0,
+                "presion_superficial": 964.7,
+                "velocidad_viento": 6.9,
+                "direccion_viento": 174,
+                "fecha_creacion": "2025-12-01T08:44:52.429Z"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -259,3 +259,82 @@ export const deleteReporte = async (req, res) => {
   }
 };
 
+// GET /api/reportes/all - Obtener TODOS los reportes sin filtros
+export const getAllReportesSinFiltro = async (req, res) => {
+  try {
+    const { limit = 1000 } = req.query;
+
+    const reportes = await Reporte.findAll({
+      include: [
+        { model: User, as: 'usuario' },
+        { model: Zona, as: 'zona' }
+      ],
+      order: [['fecha_creacion', 'DESC']],
+      limit: parseInt(limit)
+    });
+
+    res.json({
+      success: true,
+      total: reportes.length,
+      data: reportes
+    });
+  } catch (error) {
+    console.error('Error al obtener todos los reportes:', error);
+    res.status(500).json({ message: 'Error al obtener todos los reportes', error: error.message });
+  }
+};
+
+// GET /api/reportes/mis-reportes - Obtener reportes del usuario logueado
+export const getMisReportes = async (req, res) => {
+  try {
+    const usuarioId = req.user?.sub || req.user?.usuario_id;
+    
+    if (!usuarioId) {
+      return res.status(401).json({ message: 'Usuario no autenticado' });
+    }
+
+    const { zona_id, estado, fecha_inicio, fecha_fin, limit = 100 } = req.query;
+    const where = {
+      usuario_creo: parseInt(usuarioId)
+    };
+
+    if (zona_id) {
+      where.zona_id = parseInt(zona_id);
+    }
+
+    if (estado) {
+      where.estado = estado;
+    }
+
+    if (fecha_inicio || fecha_fin) {
+      where.fecha_reporte = {};
+      if (fecha_inicio) {
+        where.fecha_reporte[Op.gte] = new Date(fecha_inicio);
+      }
+      if (fecha_fin) {
+        where.fecha_reporte[Op.lte] = new Date(fecha_fin);
+      }
+    }
+
+    const reportes = await Reporte.findAll({
+      where,
+      include: [
+        { model: User, as: 'usuario' },
+        { model: Zona, as: 'zona' }
+      ],
+      order: [['fecha_creacion', 'DESC']],
+      limit: parseInt(limit)
+    });
+
+    res.json({
+      success: true,
+      usuario_id: parseInt(usuarioId),
+      total: reportes.length,
+      data: reportes
+    });
+  } catch (error) {
+    console.error('Error al obtener reportes del usuario:', error);
+    res.status(500).json({ message: 'Error al obtener reportes del usuario', error: error.message });
+  }
+};
+

@@ -155,8 +155,42 @@ Eliminar una regla de alerta
 
 ## Alertas
 
+### GET /api/alertas/all
+Obtener TODAS las alertas sin filtros
+- **Query params:** 
+  - `limit` (int, default: 1000)
+- **Auth:** Requerido
+- **Respuesta:**
+```json
+{
+  "success": true,
+  "total": 150,
+  "data": [...]
+}
+```
+
+### GET /api/alertas/mis-alertas
+Obtener alertas del usuario logueado
+- **Query params:** 
+  - `zona_id` (int)
+  - `estado` (string: open, ack, resolved, muted)
+  - `severidad` (string)
+  - `fuente` (string)
+  - `limit` (int, default: 100)
+- **Auth:** Requerido
+- **Descripción:** Filtra automáticamente por el usuario del token JWT
+- **Respuesta:**
+```json
+{
+  "success": true,
+  "usuario_id": 1,
+  "total": 25,
+  "data": [...]
+}
+```
+
 ### GET /api/alertas
-Obtener todas las alertas
+Obtener todas las alertas (con filtros opcionales)
 - **Query params:** 
   - `usuario_id` (int)
   - `zona_id` (int)
@@ -301,11 +335,11 @@ Obtener una relación por ID
 Crear una nueva relación usuario-workflow
 - **Auth:** Requerido
 ```json
-{
-  "usuario_id": 1,
-  "workflow_id": 1,
-  "activo": true
-}
+  {
+    "usuario_id": 1,
+    "workflow_id": 1,
+    "activo": true
+  }
 ```
 
 ### PUT /api/usuario-workflows/:id
@@ -354,8 +388,42 @@ Eliminar un log
 
 ## Reportes
 
+### GET /api/reportes/all
+Obtener TODOS los reportes sin filtros
+- **Query params:** 
+  - `limit` (int, default: 1000)
+- **Auth:** Requerido
+- **Respuesta:**
+```json
+{
+  "success": true,
+  "total": 50,
+  "data": [...]
+}
+```
+
+### GET /api/reportes/mis-reportes
+Obtener reportes del usuario logueado
+- **Query params:** 
+  - `zona_id` (int)
+  - `estado` (string)
+  - `fecha_inicio` (ISO date)
+  - `fecha_fin` (ISO date)
+  - `limit` (int, default: 100)
+- **Auth:** Requerido
+- **Descripción:** Filtra automáticamente por el usuario del token JWT
+- **Respuesta:**
+```json
+{
+  "success": true,
+  "usuario_id": 1,
+  "total": 10,
+  "data": [...]
+}
+```
+
 ### GET /api/reportes
-Obtener todos los reportes
+Obtener todos los reportes (con filtros opcionales)
 - **Query params:** 
   - `zona_id` (int)
   - `usuario_creo` (int)

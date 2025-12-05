@@ -7,6 +7,9 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
+    "test": "node tests/api-test-suite.js",
+    "test:postman": "newman run tests/postman/API_Proyecto_Urbano_Complete.postman_collection.json -e tests/postman/local.postman_environment.json --reporters cli,json --reporter-json-export tests/postman/newman-report.json",
+    "test:postman:html": "newman run tests/postman/API_Proyecto_Urbano_Complete.postman_collection.json -e tests/postman/local.postman_environment.json --reporters cli,html --reporter-html-export tests/postman/newman-report.html",
     "postman:test": "newman run tests/postman/API_Proyecto_Urbano.postman_collection.json -e tests/postman/local.postman_environment.json --reporters cli --reporter-cli-no-assertions"
   },
   "keywords": [

@@ -202,6 +202,87 @@ export const deleteAlerta = async (req, res) => {
   }
 };
 
+// GET /api/alertas/all - Obtener TODAS las alertas sin filtros
+export const getAllAlertasSinFiltro = async (req, res) => {
+  try {
+    const { limit = 1000 } = req.query;
+
+    const alertas = await Alerta.findAll({
+      include: [
+        { model: User, as: 'usuario' },
+        { model: Zona, as: 'zona' },
+        { model: ReglaAlerta, as: 'regla' },
+        { model: MedicionAire, as: 'medicion' }
+      ],
+      order: [['fecha_creacion', 'DESC']],
+      limit: parseInt(limit)
+    });
+
+    res.json({
+      success: true,
+      total: alertas.length,
+      data: alertas
+    });
+  } catch (error) {
+    console.error('Error al obtener todas las alertas:', error);
+    res.status(500).json({ message: 'Error al obtener todas las alertas', error: error.message });
+  }
+};
+
+// GET /api/alertas/mis-alertas - Obtener alertas del usuario logueado
+export const getMisAlertas = async (req, res) => {
+  try {
+    const usuarioId = req.user?.sub || req.user?.usuario_id;
+    
+    if (!usuarioId) {
+      return res.status(401).json({ message: 'Usuario no autenticado' });
+    }
+
+    const { zona_id, estado, severidad, fuente, limit = 100 } = req.query;
+    const where = {
+      usuario_id: parseInt(usuarioId)
+    };
+
+    if (zona_id) {
+      where.zona_id = parseInt(zona_id);
+    }
+
+    if (estado) {
+      where.estado = estado;
+    }
+
+    if (severidad) {
+      where.severidad = severidad;
+    }
+
+    if (fuente) {
+      where.fuente = fuente;
+    }
+
+    const alertas = await Alerta.findAll({
+      where,
+      include: [
+        { model: User, as: 'usuario' },
+        { model: Zona, as: 'zona' },
+        { model: ReglaAlerta, as: 'regla' },
+        { model: MedicionAire, as: 'medicion' }
+      ],
+      order: [['fecha_creacion', 'DESC']],
+      limit: parseInt(limit)
+    });
+
+    res.json({
+      success: true,
+      usuario_id: parseInt(usuarioId),
+      total: alertas.length,
+      data: alertas
+    });
+  } catch (error) {
+    console.error('Error al obtener alertas del usuario:', error);
+    res.status(500).json({ message: 'Error al obtener alertas del usuario', error: error.message });
+  }
+};
+
 
 
 

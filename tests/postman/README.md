@@ -1,151 +1,152 @@
-# 🧪 Pruebas con Postman
+# Pruebas de Postman/Newman
 
-## 📋 Descripción
+Esta carpeta contiene las colecciones de Postman para probar todos los endpoints de la API.
 
-Colección completa de pruebas automatizadas para los endpoints de autenticación (registro y login) y WebSocket de la API.
+## 📁 Archivos
 
-## 📦 Archivos
+- `API_Proyecto_Urbano_Complete.postman_collection.json`: Colección completa con todos los endpoints (54 endpoints)
+- `API_Proyecto_Urbano.postman_collection.json`: Colección original (solo autenticación)
+- `local.postman_environment.json`: Variables de entorno para desarrollo local
+- `production.postman_environment.json`: Variables de entorno para producción
+- `generate-collection.js`: Script para generar la colección completa
 
-- `API_Proyecto_Urbano.postman_collection.json` - Colección de pruebas
-- `local.postman_environment.json` - Environment para desarrollo local
-- `production.postman_environment.json` - Environment para producción (Render)
+## 🚀 Uso
 
-## 🚀 Instrucciones de Uso
+### Opción 1: Usar Postman Desktop
 
-### 1. Importar en Postman
-
-#### Opción A: Importar desde archivo
 1. Abre Postman
-2. Click en **Import** (esquina superior izquierda)
-3. Arrastra los archivos o selecciónalos:
-   - `API_Proyecto_Urbano.postman_collection.json`
-   - `local.postman_environment.json`
-   - `production.postman_environment.json`
-4. Click en **Import**
+2. Importa la colección: `File > Import > API_Proyecto_Urbano_Complete.postman_collection.json`
+3. Importa el entorno: `File > Import > local.postman_environment.json`
+4. Selecciona el entorno "Local" en el dropdown superior derecho
+5. Ejecuta la colección completa o endpoints individuales
 
-#### Opción B: Importar desde URL (si está en GitHub)
-1. Click en **Import** → **Link**
-2. Pega la URL del archivo raw de GitHub
-3. Click en **Continue** → **Import**
+### Opción 2: Usar Newman (CLI)
 
-### 2. Configurar Environment
+#### Prerrequisitos
 
-1. En la esquina superior derecha de Postman, selecciona el environment:
-   - **Local Environment** para pruebas locales (http://localhost:3001)
-   - **Production Environment** para pruebas en Render
-
-2. Verifica que la variable `baseUrl` esté correcta
-
-### 3. Ejecutar Pruebas
-
-#### Opción A: Ejecutar toda la colección
-1. Click derecho en la colección "API Proyecto Urbano - Tests Auth"
-2. Selecciona **Run collection**
-3. Configura opciones:
-   - **Iterations**: 1 (o más para pruebas repetidas)
-   - **Delay**: 500ms (tiempo entre requests)
-4. Click en **Run API Proyecto Urbano**
-5. Observa los resultados de cada test
-
-#### Opción B: Ejecutar request individual
-1. Expande la colección
-2. Click en el request que quieres ejecutar
-3. Click en **Send**
-4. Revisa:
-   - **Status code** en la respuesta
-   - **Test Results** (tab abajo)
-   - **Response body**
-
-### 4. Orden Recomendado de Ejecución
-
-Para probar el flujo completo de autenticación, ejecuta en este orden:
-
-1. **Health Check** - Verifica que el servidor esté funcionando
-2. **Registro Exitoso** - Crea un nuevo usuario (genera email único automáticamente)
-3. **Registro Email Duplicado** - Valida que no se pueden duplicar emails
-4. **Registro Datos Incompletos** - Valida validación de datos
-5. **Login Exitoso** - Obtiene JWT token (se guarda automáticamente)
-6. **Login Password Incorrecta** - Valida autenticación
-7. **Login Usuario No Existe** - Valida que usuario debe existir
-8. **Enviar Mensaje WebSocket** - Envía mensaje a clientes conectados
-9. **Obtener Valor Aleatorio** - Obtiene valor 0-100
-
-## 🧪 Tests Automatizados
-
-Cada request incluye tests automatizados que validan:
-
-### ✅ Health Check
-- Status code 200
-- Respuesta JSON válida
-- Contiene información de WebSocket
-
-### ✅ Registro Exitoso
-- Status code 201 Created
-- Retorna objeto user con id, name, email
-- NO retorna password ni passwordHash
-- Genera email único automáticamente
-
-### ✅ Registro Email Duplicado
-- Status code 409 Conflict
-- Mensaje indica email duplicado
-
-### ✅ Registro Datos Incompletos
-- Status code 400 Bad Request
-- Mensaje indica datos incompletos
-
-### ✅ Login Exitoso
-- Status code 200 OK
-- Retorna token JWT y user
-- Token tiene formato JWT válido (3 partes separadas por puntos)
-- NO retorna password
-- **Token se guarda automáticamente** en variables
-
-### ✅ Login con Errores
-- Status code 401 Unauthorized
-- Mensaje de credenciales inválidas
-- NO retorna token
-
-### ✅ WebSocket Endpoints
-- Status code 200
-- Retornan formato correcto
-- Valores dentro de rangos esperados
-
-## 📊 Visualización de Resultados
-
-Después de ejecutar la colección completa, verás:
-
-```
-┌─────────────────────────────────────┐
-│ API Proyecto Urbano - Tests Auth    │
-│                                     │
-│ ✅ 9/9 requests passed              │
-│ ✅ 35/35 tests passed               │
-│ ⏱️  Total time: 2.5s                │
-└─────────────────────────────────────┘
-
-Tests:
-✅ Status 200
-✅ Tiene websocket
-✅ Status 201
-✅ Retorna user
-✅ NO retorna password
-... (más tests)
+Asegúrate de que el servidor esté corriendo:
+```bash
+cd api_proyecto_urbano_integrador
+npm start
 ```
 
-## 🔧 Variables de Colección
+#### Ejecutar Pruebas
 
-La colección genera y usa estas variables automáticamente:
+```bash
+# Desde la raíz del proyecto
+npm run test:postman
 
-| Variable | Descripción | Generación |
-|----------|-------------|------------|
-| `testEmail` | Email único para pruebas | Automática (timestamp + random) |
-| `testName` | Nombre de usuario de prueba | Automática |
-| `testPassword` | Password para pruebas | Fija: `Test123456!` |
-| `authToken` | JWT token de autenticación | Automática al hacer login |
+# O directamente con newman
+npx newman run tests/postman/API_Proyecto_Urbano_Complete.postman_collection.json \
+  -e tests/postman/local.postman_environment.json \
+  --reporters cli,json \
+  --reporter-json-export tests/postman/newman-report.json
+```
 
-## 🌐 Environments
+#### Opciones de Newman
 
-### Local Environment
+```bash
+# Con reporte HTML
+npx newman run tests/postman/API_Proyecto_Urbano_Complete.postman_collection.json \
+  -e tests/postman/local.postman_environment.json \
+  --reporters cli,html \
+  --reporter-html-export tests/postman/newman-report.html
+
+# Con timeout personalizado (útil para endpoints de Open-Meteo)
+npx newman run tests/postman/API_Proyecto_Urbano_Complete.postman_collection.json \
+  -e tests/postman/local.postman_environment.json \
+  --timeout-request 300000 \
+  --reporters cli
+
+# Solo ejecutar una carpeta específica
+npx newman run tests/postman/API_Proyecto_Urbano_Complete.postman_collection.json \
+  -e tests/postman/local.postman_environment.json \
+  --folder "1. Autenticación" \
+  --reporters cli
+```
+
+## 📊 Estructura de la Colección
+
+La colección completa está organizada en 10 carpetas:
+
+1. **Autenticación** (6 endpoints)
+   - Health Check
+   - Registro Exitoso
+   - Registro Email Duplicado
+   - Registro Datos Incompletos
+   - Login Exitoso
+   - Login Password Incorrecta
+
+2. **Zonas** (5 endpoints)
+   - Obtener Todas las Zonas
+   - Obtener Zona por ID
+   - Crear Zona
+   - Actualizar Zona
+   - Eliminar Zona
+
+3. **Mediciones** (6 endpoints)
+   - Obtener Todas las Mediciones
+   - Obtener Mediciones con Filtros
+   - Obtener Medición por ID
+   - Crear Medición
+   - Actualizar Medición
+   - Eliminar Medición
+
+4. **Workflows** (7 endpoints)
+   - Obtener Todos los Workflows
+   - Obtener Workflow por ID
+   - Obtener Usuarios con PM2.5 Workflows
+   - Obtener Logs de Workflow
+   - Crear Workflow
+   - Actualizar Workflow
+   - Eliminar Workflow
+
+5. **Open-Meteo** (6 endpoints)
+   - Status Open-Meteo
+   - Sincronizar Open-Meteo (GET)
+   - Sincronizar Open-Meteo (POST)
+   - Sincronizar Zona Específica
+   - Obtener Datos Realtime
+   - Obtener Datos Realtime por Zona
+
+6. **Reglas de Alertas** (5 endpoints)
+   - Obtener Todas las Reglas
+   - Obtener Regla por ID
+   - Crear Regla de Alerta
+   - Actualizar Regla de Alerta
+   - Eliminar Regla de Alerta
+
+7. **Alertas** (5 endpoints)
+   - Obtener Todas las Alertas
+   - Obtener Alerta por ID
+   - Crear Alerta
+   - Actualizar Alerta
+   - Eliminar Alerta
+
+8. **Usuario-Workflows** (5 endpoints)
+   - Obtener Todas las Relaciones
+   - Obtener Relación por ID
+   - Crear Relación Usuario-Workflow
+   - Actualizar Relación
+   - Eliminar Relación
+
+9. **Logs de Workflows** (4 endpoints)
+   - Obtener Todos los Logs
+   - Obtener Log por ID
+   - Crear Log de Workflow
+   - Eliminar Log
+
+10. **Reportes** (5 endpoints)
+    - Obtener Todos los Reportes
+    - Obtener Reporte por ID
+    - Crear Reporte
+    - Actualizar Reporte
+    - Eliminar Reporte
+
+## 🔑 Variables de Entorno
+
+### Local (`local.postman_environment.json`)
+
 ```json
 {
   "baseUrl": "http://localhost:3001",
@@ -153,104 +154,84 @@ La colección genera y usa estas variables automáticamente:
 }
 ```
 
-### Production Environment
+### Producción (`production.postman_environment.json`)
+
 ```json
 {
-  "baseUrl": "https://proyect-meos.onrender.com",
+  "baseUrl": "https://api.tudominio.com",
   "authToken": ""
 }
 ```
 
+## 🔄 Variables de Colección
+
+La colección usa variables automáticas que se generan durante las pruebas:
+
+- `testEmail`: Email generado automáticamente para pruebas
+- `testName`: Nombre generado automáticamente
+- `testPassword`: Contraseña de prueba
+- `authToken`: Token JWT obtenido después del login
+- `testUserId`: ID del usuario de prueba creado
+- `testZonaId`: ID de zona para pruebas
+- `createdZonaId`: ID de zona creada durante las pruebas
+- `createdMedicionId`: ID de medición creada
+- `createdWorkflowId`: ID de workflow creado
+- `createdReglaId`: ID de regla creada
+- `createdAlertaId`: ID de alerta creada
+- `createdUsuarioWorkflowId`: ID de relación creada
+- `createdLogId`: ID de log creado
+- `createdReporteId`: ID de reporte creado
+
 ## 📝 Notas Importantes
 
-### Generación Automática de Datos
-- Cada ejecución de "Registro Exitoso" genera un email único
-- Formato: `test_{timestamp}_{random}@example.com`
-- No necesitas cambiar datos manualmente
+1. **Orden de Ejecución**: Las pruebas están diseñadas para ejecutarse en orden. Algunas pruebas dependen de recursos creados en pruebas anteriores.
 
-### Token JWT
-- Se guarda automáticamente al hacer login exitoso
-- Se almacena en:
-  - Variables de colección
-  - Variables de environment
-- Se puede usar en requests protegidos (cuando se implementen)
+2. **Autenticación**: El token se guarda automáticamente después del login exitoso y se usa en todas las peticiones que requieren autenticación.
 
-### Base de Datos
-- Las pruebas crean usuarios reales en la base de datos
-- Si ejecutas múltiples veces, se crearán múltiples usuarios
-- Recomendado: limpiar base de datos periódicamente en desarrollo
+3. **Limpieza**: Algunos recursos creados durante las pruebas pueden quedar en la base de datos. Esto es normal y puede limpiarse manualmente si es necesario.
 
-## 🐛 Troubleshooting
+4. **Open-Meteo Sync**: El endpoint de sincronización puede tardar varios minutos. Considera aumentar el timeout si ejecutas estas pruebas.
 
-### Error: "Could not get response"
-**Causa**: Servidor no está corriendo
-**Solución**: 
+5. **Datos de Prueba**: Los emails y nombres se generan automáticamente con timestamps para evitar conflictos.
+
+## 🔧 Regenerar la Colección
+
+Si necesitas regenerar la colección completa:
+
 ```bash
-cd api_proyecto_urbano_integrador
-npm run dev
+cd tests/postman
+node generate-collection.js
 ```
 
-### Error: "Status code is 500"
-**Causa**: Error en el servidor (revisar logs)
-**Solución**: Verifica consola del servidor para detalles del error
+Esto generará `API_Proyecto_Urbano_Complete.postman_collection.json` con todos los endpoints actualizados.
 
-### Error: "Status code is 409" en primer registro
-**Causa**: Email ya existe en base de datos
-**Solución**: Email se genera automáticamente, debería ser único. Si persiste, limpia la BD.
+## 📈 Reportes
 
-### Tests fallan en "Login Exitoso"
-**Causa**: Usuario no fue creado en paso anterior
-**Solución**: Ejecuta primero "Registro Exitoso"
+Después de ejecutar las pruebas con Newman, puedes generar reportes en diferentes formatos:
 
-### Token no se guarda
-**Causa**: Test de login falló
-**Solución**: Verifica que credenciales sean correctas y servidor funcione
+- **CLI**: Salida en consola (por defecto)
+- **JSON**: `--reporters json --reporter-json-export report.json`
+- **HTML**: `--reporters html --reporter-html-export report.html`
+- **JUnit**: `--reporters junit --reporter-junit-export report.xml`
 
-## 🚀 CI/CD - Ejecutar con Newman
+## 🐛 Solución de Problemas
 
-Newman es el CLI de Postman para ejecutar colecciones desde terminal.
+### Error: "ECONNREFUSED"
+- Asegúrate de que el servidor esté corriendo en `http://localhost:3001`
 
-### Instalación
-```bash
-npm install -g newman
-```
+### Error: "401 Unauthorized"
+- Verifica que el login se haya ejecutado correctamente antes de las pruebas que requieren autenticación
+- Revisa que el token se haya guardado en las variables de colección
 
-### Ejecutar colección
-```bash
-# Con environment local
-newman run API_Proyecto_Urbano.postman_collection.json \
-  -e local.postman_environment.json
+### Error: "404 Not Found"
+- Algunos endpoints pueden fallar si no hay datos en la base de datos
+- Esto es normal para endpoints que requieren recursos existentes
 
-# Con environment de producción
-newman run API_Proyecto_Urbano.postman_collection.json \
-  -e production.postman_environment.json
+### Timeout en Open-Meteo
+- Aumenta el timeout: `--timeout-request 300000` (5 minutos)
 
-# Con reporters (HTML, JSON)
-newman run API_Proyecto_Urbano.postman_collection.json \
-  -e local.postman_environment.json \
-  --reporters cli,html \
-  --reporter-html-export report.html
-```
+## 📚 Recursos Adicionales
 
-### Integración con CI/CD
-
-**GitHub Actions**:
-```yaml
-- name: Run API Tests
-  run: |
-    npm install -g newman
-    newman run tests/postman/API_Proyecto_Urbano.postman_collection.json \
-      -e tests/postman/production.postman_environment.json
-```
-
-## 📚 Recursos
-
-- [Postman Learning Center](https://learning.postman.com/)
-- [Writing Tests in Postman](https://learning.postman.com/docs/writing-scripts/test-scripts/)
-- [Newman Documentation](https://github.com/postmanlabs/newman)
-
----
-
-**Versión**: 1.0.0  
-**Última actualización**: Noviembre 2024  
-**Tests totales**: 9 requests, ~35 assertions
+- [Documentación de Newman](https://github.com/postmanlabs/newman)
+- [Documentación de Postman](https://learning.postman.com/)
+- [API Documentation](../API_DOCUMENTATION_COMPLETE.md)
