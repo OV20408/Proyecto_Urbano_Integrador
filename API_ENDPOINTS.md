@@ -32,6 +32,24 @@ Iniciar sesión
 }
 ```
 
+### GET /api/auth/me
+Obtener información del usuario logueado
+- **Auth:** Requerido
+- **Descripción:** Devuelve la información del usuario autenticado basándose en el token JWT
+- **Respuesta:**
+```json
+{
+  "success": true,
+  "user": {
+    "usuario_id": 1,
+    "nombre": "Juan Pérez",
+    "email": "juan@example.com",
+    "fecha_creacion": "2024-01-15T10:00:00.000Z",
+    "fecha_actualizacion": "2024-01-15T10:00:00.000Z"
+  }
+}
+```
+
 ---
 
 ## Zonas

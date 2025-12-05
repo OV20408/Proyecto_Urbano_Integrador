@@ -114,6 +114,53 @@ Inicia sesión y obtiene un token JWT.
 
 ---
 
+### GET /api/auth/me
+Obtiene la información del usuario autenticado.
+
+**Autenticación:** Requerida
+
+**Descripción:** Este endpoint devuelve la información completa del usuario que está autenticado, basándose en el token JWT proporcionado en el header de autorización.
+
+**Response 200 (Success):**
+```json
+{
+  "success": true,
+  "user": {
+    "usuario_id": 1,
+    "nombre": "Juan Pérez",
+    "email": "juan@example.com",
+    "fecha_creacion": "2024-01-15T10:00:00.000Z",
+    "fecha_actualizacion": "2024-01-15T10:00:00.000Z"
+  }
+}
+```
+
+**Response 401 (Unauthorized):**
+```json
+{
+  "message": "Usuario no autenticado"
+}
+```
+
+**Response 404 (Not Found):**
+```json
+{
+  "message": "Usuario no encontrado"
+}
+```
+
+**Response 500 (Internal Server Error):**
+```json
+{
+  "message": "Error al obtener información del usuario",
+  "error": "Detalles del error"
+}
+```
+
+**Nota:** El campo `password_hash` nunca se incluye en la respuesta por razones de seguridad.
+
+---
+
 ### GET /api/auth/health
 Verifica el estado del servicio de autenticación.
 

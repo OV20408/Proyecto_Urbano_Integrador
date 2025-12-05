@@ -10,7 +10,10 @@
     "test": "node tests/api-test-suite.js",
     "test:postman": "newman run tests/postman/API_Proyecto_Urbano_Complete.postman_collection.json -e tests/postman/local.postman_environment.json --reporters cli,json --reporter-json-export tests/postman/newman-report.json",
     "test:postman:html": "newman run tests/postman/API_Proyecto_Urbano_Complete.postman_collection.json -e tests/postman/local.postman_environment.json --reporters cli,html --reporter-html-export tests/postman/newman-report.html",
-    "postman:test": "newman run tests/postman/API_Proyecto_Urbano.postman_collection.json -e tests/postman/local.postman_environment.json --reporters cli --reporter-cli-no-assertions"
+    "postman:test": "newman run tests/postman/API_Proyecto_Urbano.postman_collection.json -e tests/postman/local.postman_environment.json --reporters cli --reporter-cli-no-assertions",
+    "seed:alertas": "node seeders/seed-alertas.js",
+    "seed:reportes": "node seeders/seed-reportes.js",
+    "seed:all": "npm run seed:alertas && npm run seed:reportes"
   },
   "keywords": [
     "express",

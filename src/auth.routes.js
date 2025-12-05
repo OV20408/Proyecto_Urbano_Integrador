@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 import User from './models/User.js'; // ✅ Solo importa
 import { sequelize } from './config/db.js'; // ✅ Solo importa
+import { authenticateToken } from './middleware/auth.js';
 
 dotenv.config();
 
@@ -111,6 +112,45 @@ router.post('/login', async (req, res) => {
     console.error('❌ Error al iniciar sesión:', err);
     return res.status(500).json({ 
       message: 'Error al iniciar sesión',
+      error: err.message 
+    });
+  }
+});
+
+/* ------------------------------------------------------------
+   🔸 Obtener información del usuario logueado
+   ------------------------------------------------------------ */
+router.get('/me', authenticateToken, async (req, res) => {
+  try {
+    const usuarioId = req.user?.sub || req.user?.usuario_id;
+    
+    if (!usuarioId) {
+      return res.status(401).json({ message: 'Usuario no autenticado' });
+    }
+
+    const user = await User.findByPk(usuarioId, {
+      attributes: { exclude: ['password_hash'] } // Excluir password_hash de la respuesta
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    return res.json({
+      success: true,
+      user: {
+        usuario_id: user.usuario_id,
+        nombre: user.nombre,
+        email: user.email,
+        fecha_creacion: user.fecha_creacion,
+        fecha_actualizacion: user.fecha_actualizacion
+      }
+    });
+
+  } catch (err) {
+    console.error('❌ Error al obtener usuario:', err);
+    return res.status(500).json({ 
+      message: 'Error al obtener información del usuario',
       error: err.message 
     });
   }
